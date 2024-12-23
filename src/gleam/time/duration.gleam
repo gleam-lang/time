@@ -1,3 +1,4 @@
+import gleam/int
 import gleam/order
 
 // TODO: document
@@ -14,7 +15,6 @@ pub opaque type Duration {
   Duration(seconds: Int, nanoseconds: Int)
 }
 
-// TODO: test
 /// Ensure the duration is represented with `nanoseconds` being positive and
 /// less than 1 second.
 ///
@@ -22,13 +22,19 @@ pub opaque type Duration {
 /// to, it only adjusts the values used to represent the time.
 ///
 fn normalise(duration: Duration) -> Duration {
-  todo
+  let multiplier = 1_000_000_000
+  let nanoseconds = duration.nanoseconds % multiplier
+  let overflow = duration.nanoseconds - nanoseconds
+  let seconds = duration.seconds + overflow / multiplier
+  Duration(seconds, nanoseconds)
 }
 
 // TODO: docs
-// TODO: test
 pub fn compare(left: Duration, right: Duration) -> order.Order {
-  todo
+  order.break_tie(
+    int.compare(left.seconds, right.seconds),
+    int.compare(left.nanoseconds, right.nanoseconds),
+  )
 }
 
 // TODO: docs
@@ -38,9 +44,9 @@ pub fn difference(left: Duration, right: Duration) -> Duration {
 }
 
 // TODO: docs
-// TODO: test
 pub fn add(left: Duration, right: Duration) -> Duration {
-  todo
+  Duration(left.seconds + right.seconds, left.nanoseconds + right.nanoseconds)
+  |> normalise
 }
 
 // TODO: docs
@@ -50,31 +56,29 @@ pub fn to_iso8601_string(duration: Duration) -> String {
 }
 
 // TODO: docs
-// TODO: test
-pub fn minutes(amount: Int) -> Duration {
-  todo
-}
-
-// TODO: docs
-// TODO: test
 pub fn seconds(amount: Int) -> Duration {
-  todo
+  Duration(amount, 0) |> normalise
 }
 
 // TODO: docs
 // TODO: test
 pub fn milliseconds(amount: Int) -> Duration {
-  todo
+  let remainder = amount % 1000
+  let overflow = amount - remainder
+  let nanoseconds = remainder * 1_000_000
+  let seconds = overflow / 1000
+  Duration(seconds, nanoseconds)
 }
 
 // TODO: docs
-// TODO: test
 pub fn nanoseconds(amount: Int) -> Duration {
-  todo
+  Duration(0, amount)
+  |> normalise
 }
 
 // TODO: docs
-// TODO: test
 pub fn to_seconds(duration: Duration) -> Float {
-  todo
+  let seconds = int.to_float(duration.seconds)
+  let nanoseconds = int.to_float(duration.nanoseconds)
+  seconds +. { nanoseconds /. 1_000_000_000.0 }
 }
