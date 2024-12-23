@@ -149,3 +149,75 @@ pub fn to_iso8601_string_7_test() {
   |> duration.to_iso8601_string
   |> should.equal("P365DT3H1M6S")
 }
+
+pub fn to_iso8601_string_8_test() {
+  duration.milliseconds(1000)
+  |> duration.to_iso8601_string
+  |> should.equal("PT1S")
+}
+
+pub fn to_iso8601_string_9_test() {
+  duration.milliseconds(100)
+  |> duration.to_iso8601_string
+  |> should.equal("PT0.1S")
+}
+
+pub fn to_iso8601_string_10_test() {
+  duration.milliseconds(10)
+  |> duration.to_iso8601_string
+  |> should.equal("PT0.01S")
+}
+
+pub fn to_iso8601_string_11_test() {
+  duration.milliseconds(1)
+  |> duration.to_iso8601_string
+  |> should.equal("PT0.001S")
+}
+
+pub fn to_iso8601_string_12_test() {
+  duration.nanoseconds(1_000_000)
+  |> duration.to_iso8601_string
+  |> should.equal("PT0.001S")
+}
+
+pub fn to_iso8601_string_13_test() {
+  duration.nanoseconds(100_000)
+  |> duration.to_iso8601_string
+  |> should.equal("PT0.0001S")
+}
+
+pub fn to_iso8601_string_14_test() {
+  duration.nanoseconds(10_000)
+  |> duration.to_iso8601_string
+  |> should.equal("PT0.00001S")
+}
+
+pub fn to_iso8601_string_15_test() {
+  duration.nanoseconds(1000)
+  |> duration.to_iso8601_string
+  |> should.equal("PT0.000001S")
+}
+
+pub fn to_iso8601_string_16_test() {
+  duration.nanoseconds(100)
+  |> duration.to_iso8601_string
+  |> should.equal("PT0.0000001S")
+}
+
+pub fn to_iso8601_string_17_test() {
+  duration.nanoseconds(10)
+  |> duration.to_iso8601_string
+  |> should.equal("PT0.00000001S")
+}
+
+pub fn to_iso8601_string_18_test() {
+  duration.nanoseconds(1)
+  |> duration.to_iso8601_string
+  |> should.equal("PT0.000000001S")
+}
+
+pub fn to_iso8601_string_19_test() {
+  duration.nanoseconds(123_456_789)
+  |> duration.to_iso8601_string
+  |> should.equal("PT0.123456789S")
+}

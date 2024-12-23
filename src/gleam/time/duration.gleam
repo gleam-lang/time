@@ -1,5 +1,7 @@
+import gleam/bool
 import gleam/int
 import gleam/io
+import gleam/list
 import gleam/order
 import gleam/string
 
@@ -52,7 +54,6 @@ pub fn add(left: Duration, right: Duration) -> Duration {
 }
 
 // TODO: docs
-// TODO: test
 pub fn to_iso8601_string(duration: Duration) -> String {
   let split = fn(total, limit) {
     let amount = total % limit
@@ -63,19 +64,39 @@ pub fn to_iso8601_string(duration: Duration) -> String {
   let #(minutes, rest) = split(rest, 60)
   let #(hours, rest) = split(rest, 24)
   let days = rest
-
   let add = fn(out, value, unit) {
     case value {
       0 -> out
       _ -> out <> int.to_string(value) <> unit
     }
   }
-  "P"
-  |> add(days, "D")
-  |> string.append("T")
-  |> add(hours, "H")
-  |> add(minutes, "M")
-  |> add(seconds, "S")
+  let output =
+    "P"
+    |> add(days, "D")
+    |> string.append("T")
+    |> add(hours, "H")
+    |> add(minutes, "M")
+  case seconds, duration.nanoseconds {
+    0, 0 -> output
+    _, 0 -> output <> int.to_string(seconds) <> "S"
+    _, _ -> {
+      let f = nanosecond_digits(duration.nanoseconds, 0, "")
+      output <> int.to_string(seconds) <> "." <> f <> "S"
+    }
+  }
+}
+
+fn nanosecond_digits(n: Int, position: Int, acc: String) -> String {
+  case position {
+    9 -> acc
+    _ if acc == "" && n % 10 == 0 -> {
+      nanosecond_digits(n / 10, position + 1, acc)
+    }
+    _ -> {
+      let acc = int.to_string(n % 10) <> acc
+      nanosecond_digits(n / 10, position + 1, acc)
+    }
+  }
 }
 
 // TODO: docs
@@ -84,7 +105,6 @@ pub fn seconds(amount: Int) -> Duration {
 }
 
 // TODO: docs
-// TODO: test
 pub fn milliseconds(amount: Int) -> Duration {
   let remainder = amount % 1000
   let overflow = amount - remainder
