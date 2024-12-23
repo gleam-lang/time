@@ -39,19 +39,16 @@ import gleam/time/duration.{type Duration}
 /// The UTC time zone never has any adjustments, so you don't need a time zone
 /// database to convert to UTC local time.
 ///
-/// # Representation
-///
-/// When compiling to JavaScript ints have limited precision and size. This
-/// means that if we were to store the the timestamp in a single int the
-/// timestamp would not be able to represent times far in the future or in the
-/// past, or distinguish between two times that are close together. Timestamps
-/// are instead represented as a number of seconds and a number of nanoseconds.
-///
-/// If you have manually adjusted the seconds and nanoseconds values the
-/// `normalise` function can be used to ensure the time is represented the
-/// intended way, with `nanoseconds` being positive and less than 1 second.
-///
-pub type Timestamp {
+pub opaque type Timestamp {
+  // When compiling to JavaScript ints have limited precision and size. This
+  // means that if we were to store the the timestamp in a single int the
+  // timestamp would not be able to represent times far in the future or in the
+  // past, or distinguish between two times that are close together. Timestamps
+  // are instead represented as a number of seconds and a number of nanoseconds.
+  //
+  // If you have manually adjusted the seconds and nanoseconds values the
+  // `normalise` function can be used to ensure the time is represented the
+  // intended way, with `nanoseconds` being positive and less than 1 second.
   Timestamp(seconds: Int, nanoseconds: Int)
 }
 
@@ -62,7 +59,7 @@ pub type Timestamp {
 /// This function does not change the time that the timestamp refers to, it
 /// only adjusts the values used to represent the time.
 ///
-pub fn normalise(timestamp: Timestamp) -> Timestamp {
+fn normalise(timestamp: Timestamp) -> Timestamp {
   todo
 }
 
