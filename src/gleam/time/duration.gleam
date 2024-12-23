@@ -66,3 +66,15 @@ pub fn seconds(amount: Int) -> Duration {
 pub fn milliseconds(amount: Int) -> Duration {
   todo
 }
+
+// TODO: docs
+// TODO: test
+pub fn nanoseconds(amount: Int) -> Duration {
+  todo
+}
+
+// TODO: docs
+// TODO: test
+pub fn to_seconds(duration: Duration) -> Float {
+  todo
+}

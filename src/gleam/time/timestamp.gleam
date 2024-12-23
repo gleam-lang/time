@@ -98,3 +98,30 @@ pub fn to_rfc3339_utc_string(timestamp: Timestamp) -> String {
 pub fn parse_rfc3339(input: String) -> Result(Timestamp, Nil) {
   todo
 }
+
+// TODO: docs
+// TODO: test
+pub fn from_unix_seconds(seconds: Int) -> Timestamp {
+  todo
+}
+
+// TODO: docs
+// TODO: test
+pub fn from_unix_seconds_and_nanoseconds(
+  seconds seconds: Int,
+  nanoseconds nanoseconds: Int,
+) -> Timestamp {
+  todo
+}
+
+// TODO: docs
+// TODO: test
+pub fn to_unix_seconds(input: String) -> Float {
+  todo
+}
+
+// TODO: docs
+// TODO: test
+pub fn to_unix_seconds_and_nanoseconds(input: String) -> #(Int, Int) {
+  todo
+}
