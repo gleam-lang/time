@@ -95,3 +95,9 @@ pub fn add(timetamp: Timestamp, duration: Duration) -> Duration {
 pub fn to_rfc3339_utc_string(timestamp: Timestamp) -> String {
   todo
 }
+
+// TODO: docs
+// TODO: test
+pub fn parse_rfc3339(input: String) -> Result(Timestamp, Nil) {
+  todo
+}
