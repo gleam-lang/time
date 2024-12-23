@@ -1,7 +1,4 @@
-import gleam/bool
 import gleam/int
-import gleam/io
-import gleam/list
 import gleam/order
 import gleam/string
 
@@ -42,9 +39,9 @@ pub fn compare(left: Duration, right: Duration) -> order.Order {
 }
 
 // TODO: docs
-// TODO: test
 pub fn difference(left: Duration, right: Duration) -> Duration {
-  todo
+  Duration(right.seconds - left.seconds, right.nanoseconds - left.nanoseconds)
+  |> normalise
 }
 
 // TODO: docs

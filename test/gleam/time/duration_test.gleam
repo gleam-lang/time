@@ -221,3 +221,18 @@ pub fn to_iso8601_string_19_test() {
   |> duration.to_iso8601_string
   |> should.equal("PT0.123456789S")
 }
+
+pub fn difference_0_test() {
+  duration.difference(duration.seconds(100), duration.seconds(250))
+  |> should.equal(duration.seconds(150))
+}
+
+pub fn difference_1_test() {
+  duration.difference(duration.seconds(250), duration.seconds(100))
+  |> should.equal(duration.seconds(-150))
+}
+
+pub fn difference_2_test() {
+  duration.difference(duration.seconds(2), duration.milliseconds(3500))
+  |> should.equal(duration.milliseconds(1500))
+}
