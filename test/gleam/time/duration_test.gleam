@@ -97,3 +97,55 @@ pub fn compare_5_test() {
   duration.compare(duration.nanoseconds(1_000_000_000), duration.seconds(1))
   |> should.equal(order.Eq)
 }
+
+pub fn to_iso8601_string_0_test() {
+  duration.seconds(42)
+  |> duration.to_iso8601_string
+  |> should.equal("PT42S")
+}
+
+pub fn to_iso8601_string_1_test() {
+  duration.seconds(60)
+  |> duration.to_iso8601_string
+  |> should.equal("PT1M")
+}
+
+pub fn to_iso8601_string_2_test() {
+  duration.seconds(362)
+  |> duration.to_iso8601_string
+  |> should.equal("PT6M2S")
+}
+
+pub fn to_iso8601_string_3_test() {
+  duration.seconds(60 * 60)
+  |> duration.to_iso8601_string
+  |> should.equal("PT1H")
+}
+
+pub fn to_iso8601_string_4_test() {
+  duration.seconds(60 * 60 * 24)
+  |> duration.to_iso8601_string
+  |> should.equal("P1DT")
+}
+
+pub fn to_iso8601_string_5_test() {
+  duration.seconds(60 * 60 * 24 * 50)
+  |> duration.to_iso8601_string
+  |> should.equal("P50DT")
+}
+
+pub fn to_iso8601_string_6_test() {
+  // We don't use years because you can't tell how long a year is in seconds
+  // without context. _Which_ year? They have different lengths.
+  duration.seconds(60 * 60 * 24 * 365)
+  |> duration.to_iso8601_string
+  |> should.equal("P365DT")
+}
+
+pub fn to_iso8601_string_7_test() {
+  let year = 60 * 60 * 24 * 365
+  let hour = 60 * 60
+  duration.seconds(year + hour * 3 + 66)
+  |> duration.to_iso8601_string
+  |> should.equal("P365DT3H1M6S")
+}

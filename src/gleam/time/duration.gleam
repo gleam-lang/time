@@ -1,5 +1,7 @@
 import gleam/int
+import gleam/io
 import gleam/order
+import gleam/string
 
 // TODO: document
 pub opaque type Duration {
@@ -52,7 +54,28 @@ pub fn add(left: Duration, right: Duration) -> Duration {
 // TODO: docs
 // TODO: test
 pub fn to_iso8601_string(duration: Duration) -> String {
-  todo
+  let split = fn(total, limit) {
+    let amount = total % limit
+    let remainder = { total - amount } / limit
+    #(amount, remainder)
+  }
+  let #(seconds, rest) = split(duration.seconds, 60)
+  let #(minutes, rest) = split(rest, 60)
+  let #(hours, rest) = split(rest, 24)
+  let days = rest
+
+  let add = fn(out, value, unit) {
+    case value {
+      0 -> out
+      _ -> out <> int.to_string(value) <> unit
+    }
+  }
+  "P"
+  |> add(days, "D")
+  |> string.append("T")
+  |> add(hours, "H")
+  |> add(minutes, "M")
+  |> add(seconds, "S")
 }
 
 // TODO: docs
