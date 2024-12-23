@@ -39,3 +39,21 @@ pub fn add(left: Duration, right: Duration) -> Duration {
 pub fn to_iso8601_string(duration: Duration) -> String {
   todo
 }
+
+// TODO: docs
+// TODO: test
+pub fn minutes(amount: Int) -> Duration {
+  todo
+}
+
+// TODO: docs
+// TODO: test
+pub fn seconds(amount: Int) -> Duration {
+  todo
+}
+
+// TODO: docs
+// TODO: test
+pub fn milliseconds(amount: Int) -> Duration {
+  todo
+}
