@@ -2,7 +2,8 @@ import gleam/int
 import gleam/order
 import gleam/string
 
-// TODO: document
+/// An amount of time, with up to nanosecond precision.
+///
 pub opaque type Duration {
   // When compiling to JavaScript ints have limited precision and size. This
   // means that if we were to store the the timestamp in a single int the
@@ -30,7 +31,16 @@ fn normalise(duration: Duration) -> Duration {
   Duration(seconds, nanoseconds)
 }
 
-// TODO: docs
+/// Compare one duration to another, indicating whether the first is greater or
+/// smaller than the second.
+///
+/// # Examples
+///
+/// ```gleam
+/// compare(seconds(1), seconds(2))
+/// // -> order.Lt
+/// ```
+///
 pub fn compare(left: Duration, right: Duration) -> order.Order {
   order.break_tie(
     int.compare(left.seconds, right.seconds),
@@ -38,19 +48,45 @@ pub fn compare(left: Duration, right: Duration) -> order.Order {
   )
 }
 
-// TODO: docs
+/// Calculate the difference between two durations.
+///
+/// This is effectively substracting the first duration from the second.
+///
+/// # Examples
+///
+/// ```gleam
+/// difference(seconds(1), seconds(5))
+/// // -> seconds(4)
+/// ```
+///
 pub fn difference(left: Duration, right: Duration) -> Duration {
   Duration(right.seconds - left.seconds, right.nanoseconds - left.nanoseconds)
   |> normalise
 }
 
-// TODO: docs
+/// Add two durations together.
+///
+/// # Examples
+///
+/// ```gleam
+/// add(seconds(1), seconds(5))
+/// // -> seconds(6)
+/// ```
+///
 pub fn add(left: Duration, right: Duration) -> Duration {
   Duration(left.seconds + right.seconds, left.nanoseconds + right.nanoseconds)
   |> normalise
 }
 
-// TODO: docs
+/// Convert the duration to an [ISO8601][1] formatted duration string.
+///
+/// The ISO8601 duration format is ambiguous without context due to months and
+/// years having different lengths, and because of leap seconds. This function
+/// encodes the duration as days, hours, and seconds without any leap seconds.
+/// Be sure to take this into account when using the duration strings.
+///
+/// [1]: https://en.wikipedia.org/wiki/ISO_8601#Durations
+///
 pub fn to_iso8601_string(duration: Duration) -> String {
   let split = fn(total, limit) {
     let amount = total % limit
@@ -96,12 +132,12 @@ fn nanosecond_digits(n: Int, position: Int, acc: String) -> String {
   }
 }
 
-// TODO: docs
+/// Create a duration of a number of seconds.
 pub fn seconds(amount: Int) -> Duration {
   Duration(amount, 0) |> normalise
 }
 
-// TODO: docs
+/// Create a duration of a number of milliseconds.
 pub fn milliseconds(amount: Int) -> Duration {
   let remainder = amount % 1000
   let overflow = amount - remainder
@@ -110,15 +146,25 @@ pub fn milliseconds(amount: Int) -> Duration {
   Duration(seconds, nanoseconds)
 }
 
-// TODO: docs
+/// Create a duration of a number of nanoseconds.
 pub fn nanoseconds(amount: Int) -> Duration {
   Duration(0, amount)
   |> normalise
 }
 
-// TODO: docs
+/// Convert the duration to a number of seconds.
+///
+/// There may be some small loss of precision due to `Duration` being
+/// nanosecond accurate and `Float` not being able to represent this.
+///
 pub fn to_seconds(duration: Duration) -> Float {
   let seconds = int.to_float(duration.seconds)
   let nanoseconds = int.to_float(duration.nanoseconds)
   seconds +. { nanoseconds /. 1_000_000_000.0 }
+}
+
+/// Convert the duration to a number of seconds and nanoseconds. There is no
+/// loss of precision with this conversion on any target.
+pub fn to_seconds_and_nanoseconds(duration: Duration) -> #(Int, Int) {
+  #(duration.seconds, duration.nanoseconds)
 }

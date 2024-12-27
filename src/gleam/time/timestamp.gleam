@@ -71,7 +71,7 @@ pub fn compare(left: Timestamp, right: Timestamp) -> order.Order {
 
 // TODO: docs
 // TODO: test
-pub fn now() -> Timestamp {
+pub fn system_time() -> Timestamp {
   todo
 }
 
@@ -89,15 +89,17 @@ pub fn add(timetamp: Timestamp, duration: Duration) -> Duration {
 
 // TODO: docs
 // TODO: test
-pub fn to_rfc3339_utc_string(timestamp: Timestamp) -> String {
-  todo
-}
+// TODO: implement
+// pub fn to_rfc3339_utc_string(timestamp: Timestamp) -> String {
+//   todo
+// }
 
 // TODO: docs
 // TODO: test
-pub fn parse_rfc3339(input: String) -> Result(Timestamp, Nil) {
-  todo
-}
+// TODO: implement
+// pub fn parse_rfc3339(input: String) -> Result(Timestamp, Nil) {
+//   todo
+// }
 
 // TODO: docs
 // TODO: test
