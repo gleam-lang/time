@@ -4,6 +4,11 @@ import gleam/string
 
 /// An amount of time, with up to nanosecond precision.
 ///
+/// This type does not represent calendar periods such as "1 month" or "2
+/// days". Those periods will be different lengths of time depending on which
+/// month or day they apply to. For example, January is longer than February.
+/// A different type should be used for calendar periods.
+///
 pub opaque type Duration {
   // When compiling to JavaScript ints have limited precision and size. This
   // means that if we were to store the the timestamp in a single int the

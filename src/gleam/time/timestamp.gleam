@@ -1,3 +1,4 @@
+import gleam/int
 import gleam/order
 import gleam/time/duration.{type Duration}
 
@@ -52,7 +53,6 @@ pub opaque type Timestamp {
   Timestamp(seconds: Int, nanoseconds: Int)
 }
 
-// TODO: test
 /// Ensure the time is represented with `nanoseconds` being positive and less
 /// than 1 second.
 ///
@@ -60,31 +60,81 @@ pub opaque type Timestamp {
 /// only adjusts the values used to represent the time.
 ///
 fn normalise(timestamp: Timestamp) -> Timestamp {
-  todo
+  let multiplier = 1_000_000_000
+  let nanoseconds = timestamp.nanoseconds % multiplier
+  let overflow = timestamp.nanoseconds - nanoseconds
+  let seconds = timestamp.seconds + overflow / multiplier
+  Timestamp(seconds, nanoseconds)
 }
 
-// TODO: docs
-// TODO: test
+/// Compare one timestamp to another, indicating whether the first is greater or
+/// smaller than the second.
+///
+/// # Examples
+///
+/// ```gleam
+/// compare(from_unix_seconds(1), from_unix_seconds(2))
+/// // -> order.Lt
+/// ```
+///
 pub fn compare(left: Timestamp, right: Timestamp) -> order.Order {
-  todo
+  order.break_tie(
+    int.compare(left.seconds, right.seconds),
+    int.compare(left.nanoseconds, right.nanoseconds),
+  )
 }
 
-// TODO: docs
-// TODO: test
+/// Get the current system time.
+///
+/// Note this time is not unique or monotonic, it could change at any time or
+/// even go backwards! The exact behaviour will depend on the runtime used. See
+/// the module documentation for more information.
+///
+/// On Erlang this uses [`erlang:system_time/1`][1]. On JavaScript this uses
+/// [`Date.now`][2].
+///
+/// [1]: https://www.erlang.org/doc/apps/erts/erlang#system_time/1
+/// [2]: https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Date/now
+///
 pub fn system_time() -> Timestamp {
-  todo
+  let #(seconds, nanoseconds) = get_system_time()
+  normalise(Timestamp(seconds, nanoseconds))
 }
 
-// TODO: docs
-// TODO: test
+@external(erlang, "gleam_time_ffi", "system_time")
+@external(javascript, "../../gleam_time_ffi.mjs", "system_time")
+fn get_system_time() -> #(Int, Int)
+
+/// Calculate the difference between two timestamps.
+///
+/// This is effectively substracting the first timestamp from the second.
+///
+/// # Examples
+///
+/// ```gleam
+/// difference(from_unix_seconds(1), from_unix_seconds(5))
+/// // -> duration.seconds(4)
+/// ```
+///
 pub fn difference(left: Timestamp, right: Timestamp) -> Duration {
-  todo
+  let seconds = duration.seconds(right.seconds - left.seconds)
+  let nanoseconds = duration.nanoseconds(right.nanoseconds - left.nanoseconds)
+  duration.add(seconds, nanoseconds)
 }
 
-// TODO: docs
-// TODO: test
-pub fn add(timetamp: Timestamp, duration: Duration) -> Duration {
-  todo
+/// Add a duration to a timestamp.
+///
+/// # Examples
+///
+/// ```gleam
+/// add(from_unix_seconds(1000), duration.seconds(5))
+/// // -> from_unix_seconds(1005)
+/// ```
+///
+pub fn add(timestamp: Timestamp, duration: Duration) -> Timestamp {
+  let #(seconds, nanoseconds) = duration.to_seconds_and_nanoseconds(duration)
+  Timestamp(timestamp.seconds + seconds, timestamp.nanoseconds + nanoseconds)
+  |> normalise
 }
 
 // TODO: docs
@@ -101,29 +151,39 @@ pub fn add(timetamp: Timestamp, duration: Duration) -> Duration {
 //   todo
 // }
 
-// TODO: docs
-// TODO: test
+/// Create a timestamp from a number of seconds since 00:00:00 UTC on 1 January
+/// 1970.
+///
 pub fn from_unix_seconds(seconds: Int) -> Timestamp {
-  todo
+  Timestamp(seconds, 0)
 }
 
-// TODO: docs
-// TODO: test
+/// Create a timestamp from a number of seconds and nanoseconds since 00:00:00
+/// UTC on 1 January 1970.
+///
 pub fn from_unix_seconds_and_nanoseconds(
   seconds seconds: Int,
   nanoseconds nanoseconds: Int,
 ) -> Timestamp {
-  todo
+  Timestamp(seconds, nanoseconds)
+  |> normalise
 }
 
-// TODO: docs
-// TODO: test
-pub fn to_unix_seconds(input: String) -> Float {
-  todo
+/// Convert the timestamp to a number of seconds since 00:00:00 UTC on 1
+/// January 1970.
+///
+/// There may be some small loss of precision due to `Timestamp` being
+/// nanosecond accurate and `Float` not being able to represent this.
+///
+pub fn to_unix_seconds(timestamp: Timestamp) -> Float {
+  let seconds = int.to_float(timestamp.seconds)
+  let nanoseconds = int.to_float(timestamp.nanoseconds)
+  seconds +. { nanoseconds /. 1_000_000_000.0 }
 }
 
-// TODO: docs
-// TODO: test
-pub fn to_unix_seconds_and_nanoseconds(input: String) -> #(Int, Int) {
-  todo
+/// Convert the timestamp to a number of seconds and nanoseconds since 00:00:00
+/// UTC on 1 January 1970. There is no loss of precision with this conversion
+/// on any target.
+pub fn to_unix_seconds_and_nanoseconds(timestamp: Timestamp) -> #(Int, Int) {
+  #(timestamp.seconds, timestamp.nanoseconds)
 }
