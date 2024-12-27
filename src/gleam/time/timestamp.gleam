@@ -1,5 +1,8 @@
+import gleam/float
 import gleam/int
 import gleam/order
+import gleam/result
+import gleam/string
 import gleam/time/duration.{type Duration}
 
 /// A timestamp represents a moment in time, represented as an amount of time
@@ -138,11 +141,68 @@ pub fn add(timestamp: Timestamp, duration: Duration) -> Timestamp {
 }
 
 // TODO: docs
-// TODO: test
-// TODO: implement
-// pub fn to_rfc3339_utc_string(timestamp: Timestamp) -> String {
-//   todo
-// }
+// TODO: rename?
+pub fn to_rfc3339_utc(timestamp: Timestamp) -> String {
+  let seconds = int.modulo(timestamp.seconds, 60) |> result.unwrap(0)
+  let total_minutes = floored_div(timestamp.seconds, 60.0)
+  let minutes =
+    { int.modulo(timestamp.seconds, 60 * 60) |> result.unwrap(0) } / 60
+  let hours =
+    { int.modulo(timestamp.seconds, 24 * 60 * 60) |> result.unwrap(0) }
+    / { 60 * 60 }
+  let #(years, months, days) = to_civil(total_minutes)
+  let n = fn(n) { int.to_string(n) |> string.pad_start(2, "0") }
+  n(years)
+  <> "-"
+  <> n(months)
+  <> "-"
+  <> n(days)
+  <> "T"
+  <> n(hours)
+  <> ":"
+  <> n(minutes)
+  <> ":"
+  <> n(seconds)
+  <> "Z"
+}
+
+fn floored_div(numerator: Int, denominator: Float) -> Int {
+  let n = int.to_float(numerator) /. denominator
+  float.round(float.floor(n))
+}
+
+// Adapted from Elm's Time module
+fn to_civil(minutes: Int) -> #(Int, Int, Int) {
+  let raw_day = floored_div(minutes, { 60.0 *. 24.0 }) + 719_468
+  let era = case raw_day >= 0 {
+    True -> raw_day / 146_097
+    False -> { raw_day - 146_096 } / 146_097
+  }
+  let day_of_era = raw_day - era * 146_097
+  let year_of_era =
+    {
+      day_of_era
+      - { day_of_era / 1460 }
+      + { day_of_era / 36_524 }
+      - { day_of_era / 146_096 }
+    }
+    / 365
+  let year = year_of_era + era * 400
+  let day_of_year =
+    day_of_era
+    - { 365 * year_of_era + { year_of_era / 4 } - { year_of_era / 100 } }
+  let mp = { 5 * day_of_year + 2 } / 153
+  let month = case mp < 10 {
+    True -> mp + 3
+    False -> mp - 9
+  }
+  let day = day_of_year - { 153 * mp + 2 } / 5 + 1
+  let year = case month <= 2 {
+    True -> year + 1
+    False -> year
+  }
+  #(year, month, day)
+}
 
 // TODO: docs
 // TODO: test
