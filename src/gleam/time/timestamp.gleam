@@ -1,7 +1,6 @@
 import gleam/float
 import gleam/int
 import gleam/order
-import gleam/result
 import gleam/string
 import gleam/time/duration.{type Duration}
 
@@ -140,30 +139,46 @@ pub fn add(timestamp: Timestamp, duration: Duration) -> Timestamp {
   |> normalise
 }
 
-// TODO: docs
-// TODO: rename?
-pub fn to_rfc3339_utc(timestamp: Timestamp) -> String {
-  let seconds = int.modulo(timestamp.seconds, 60) |> result.unwrap(0)
-  let total_minutes = floored_div(timestamp.seconds, 60.0)
-  let minutes =
-    { int.modulo(timestamp.seconds, 60 * 60) |> result.unwrap(0) } / 60
-  let hours =
-    { int.modulo(timestamp.seconds, 24 * 60 * 60) |> result.unwrap(0) }
-    / { 60 * 60 }
+/// Convert a timestamp to a RFC 3339 formatted time string, with an offset
+/// supplied in minutes.
+///
+/// The output of this function is also ISO 8601 compatible so long as the
+/// offset not negative.
+///
+/// # Examples
+///
+/// ```gleam
+/// to_rfc3339(from_unix_seconds(1000), 0)
+/// // -> "1970-01-01T00:00:00Z"
+/// ```
+///
+pub fn to_rfc3339(timestamp: Timestamp, offset_minutes offset: Int) -> String {
+  let total = timestamp.seconds - { offset * 60 }
+  let seconds = modulo(total, 60)
+  let total_minutes = floored_div(total, 60.0)
+  let minutes = modulo(total, 60 * 60) / 60
+  let hours = modulo(total, 24 * 60 * 60) / { 60 * 60 }
   let #(years, months, days) = to_civil(total_minutes)
+  let offset_minutes = modulo(offset, 60)
+  let offset_hours = int.absolute_value(floored_div(offset, 60.0))
+
   let n = fn(n) { int.to_string(n) |> string.pad_start(2, "0") }
-  n(years)
-  <> "-"
-  <> n(months)
-  <> "-"
-  <> n(days)
-  <> "T"
-  <> n(hours)
-  <> ":"
-  <> n(minutes)
-  <> ":"
-  <> n(seconds)
-  <> "Z"
+  let out = ""
+  let out = out <> n(years) <> "-" <> n(months) <> "-" <> n(days)
+  let out = out <> "T"
+  let out = out <> n(hours) <> ":" <> n(minutes) <> ":" <> n(seconds)
+  case int.compare(offset, 0) {
+    order.Eq -> out <> "Z"
+    order.Gt -> out <> "+" <> n(offset_hours) <> ":" <> n(offset_minutes)
+    order.Lt -> out <> "-" <> n(offset_hours) <> ":" <> n(offset_minutes)
+  }
+}
+
+fn modulo(n: Int, m: Int) -> Int {
+  case int.modulo(n, m) {
+    Ok(n) -> n
+    Error(_) -> 0
+  }
 }
 
 fn floored_div(numerator: Int, denominator: Float) -> Int {

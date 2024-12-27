@@ -106,44 +106,56 @@ pub fn system_time_0_test() {
   let assert True = now < christmas_day_2025
 }
 
-pub fn to_rfc3339_utc_0_test() {
+pub fn to_rfc3339_0_test() {
   timestamp.from_unix_seconds(1_735_309_467)
-  |> timestamp.to_rfc3339_utc
+  |> timestamp.to_rfc3339(0)
   |> should.equal("2024-12-27T14:24:27Z")
 }
 
-pub fn to_rfc3339_utc_1_test() {
+pub fn to_rfc3339_1_test() {
   timestamp.from_unix_seconds(1)
-  |> timestamp.to_rfc3339_utc
+  |> timestamp.to_rfc3339(0)
   |> should.equal("1970-01-01T00:00:01Z")
 }
 
-pub fn to_rfc3339_utc_2_test() {
+pub fn to_rfc3339_2_test() {
   timestamp.from_unix_seconds(0)
-  |> timestamp.to_rfc3339_utc
+  |> timestamp.to_rfc3339(0)
   |> should.equal("1970-01-01T00:00:00Z")
 }
 
-pub fn to_rfc3339_utc_3_test() {
+pub fn to_rfc3339_3_test() {
   timestamp.from_unix_seconds(123_456_789)
-  |> timestamp.to_rfc3339_utc
+  |> timestamp.to_rfc3339(0)
   |> should.equal("1973-11-29T21:33:09Z")
 }
 
-pub fn to_rfc3339_utc_4_test() {
+pub fn to_rfc3339_4_test() {
   timestamp.from_unix_seconds(31_560_000)
-  |> timestamp.to_rfc3339_utc
+  |> timestamp.to_rfc3339(0)
   |> should.equal("1971-01-01T06:40:00Z")
 }
 
-pub fn to_rfc3339_utc_5_test() {
+pub fn to_rfc3339_5_test() {
   timestamp.from_unix_seconds(-12_345_678)
-  |> timestamp.to_rfc3339_utc
+  |> timestamp.to_rfc3339(0)
   |> should.equal("1969-08-11T02:38:42Z")
 }
 
-pub fn to_rfc3339_utc_6_test() {
+pub fn to_rfc3339_6_test() {
   timestamp.from_unix_seconds(-1)
-  |> timestamp.to_rfc3339_utc
+  |> timestamp.to_rfc3339(0)
   |> should.equal("1969-12-31T23:59:59Z")
+}
+
+pub fn to_rfc3339_7_test() {
+  timestamp.from_unix_seconds(60 * 60 + 60 * 5)
+  |> timestamp.to_rfc3339(65)
+  |> should.equal("1970-01-01T00:00:00+01:05")
+}
+
+pub fn to_rfc3339_8_test() {
+  timestamp.from_unix_seconds(0)
+  |> timestamp.to_rfc3339(-120)
+  |> should.equal("1970-01-01T02:00:00-02:00")
 }
