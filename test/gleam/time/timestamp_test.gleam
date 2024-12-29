@@ -2,6 +2,7 @@ import gleam/order
 import gleam/time/duration
 import gleam/time/timestamp
 import gleeunit/should
+import qcheck
 
 pub fn compare_0_test() {
   timestamp.compare(
@@ -51,6 +52,19 @@ pub fn difference_2_test() {
   |> should.equal(duration.seconds(4) |> duration.add(duration.nanoseconds(10)))
 }
 
+pub fn add_property_test() {
+  use #(x, y) <- qcheck.given(qcheck.map2(
+    fn(x, y) { #(x, y) },
+    qcheck.int_uniform(),
+    qcheck.int_uniform(),
+  ))
+  let expected = timestamp.from_unix_seconds_and_nanoseconds(0, x + y)
+  let actual =
+    timestamp.from_unix_seconds_and_nanoseconds(0, x)
+    |> timestamp.add(duration.nanoseconds(y))
+  expected == actual
+}
+
 pub fn add_0_test() {
   timestamp.from_unix_seconds(0)
   |> timestamp.add(duration.seconds(1))
@@ -67,6 +81,18 @@ pub fn add_2_test() {
   timestamp.from_unix_seconds(99)
   |> timestamp.add(duration.nanoseconds(100))
   |> should.equal(timestamp.from_unix_seconds_and_nanoseconds(99, 100))
+}
+
+pub fn add_3_test() {
+  timestamp.from_unix_seconds_and_nanoseconds(0, -1)
+  |> timestamp.add(duration.nanoseconds(-1_000_000_000))
+  |> should.equal(timestamp.from_unix_seconds_and_nanoseconds(0, -1_000_000_001))
+}
+
+pub fn add_4_test() {
+  timestamp.from_unix_seconds_and_nanoseconds(0, 1)
+  |> timestamp.add(duration.nanoseconds(-1_000_000_000))
+  |> should.equal(timestamp.from_unix_seconds_and_nanoseconds(0, -999_999_999))
 }
 
 pub fn to_unix_seconds_0_test() {

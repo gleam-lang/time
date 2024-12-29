@@ -66,7 +66,10 @@ fn normalise(timestamp: Timestamp) -> Timestamp {
   let nanoseconds = timestamp.nanoseconds % multiplier
   let overflow = timestamp.nanoseconds - nanoseconds
   let seconds = timestamp.seconds + overflow / multiplier
-  Timestamp(seconds, nanoseconds)
+  case nanoseconds >= 0 {
+    True -> Timestamp(seconds, nanoseconds)
+    False -> Timestamp(seconds - 1, multiplier + nanoseconds)
+  }
 }
 
 /// Compare one timestamp to another, indicating whether the first is greater or
