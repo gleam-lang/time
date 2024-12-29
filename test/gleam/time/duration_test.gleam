@@ -1,9 +1,10 @@
+import gleam/int
 import gleam/order
 import gleam/time/duration
 import gleeunit/should
 import qcheck
 
-pub fn add_property_test() {
+pub fn add_property_0_test() {
   use #(x, y) <- qcheck.given(qcheck.map2(
     fn(x, y) { #(x, y) },
     qcheck.int_uniform(),
@@ -11,6 +12,17 @@ pub fn add_property_test() {
   ))
   let expected = duration.nanoseconds(x + y)
   let actual = duration.nanoseconds(x) |> duration.add(duration.nanoseconds(y))
+  expected == actual
+}
+
+pub fn add_property_1_test() {
+  use #(x, y) <- qcheck.given(qcheck.map2(
+    fn(x, y) { #(x, y) },
+    qcheck.int_uniform(),
+    qcheck.int_uniform(),
+  ))
+  let expected = duration.seconds(x + y)
+  let actual = duration.seconds(x) |> duration.add(duration.seconds(y))
   expected == actual
 }
 
@@ -108,6 +120,28 @@ pub fn to_seconds_4_test() {
   duration.nanoseconds(500)
   |> duration.to_seconds
   |> should.equal(0.0000005)
+}
+
+pub fn compare_property_0_test() {
+  use #(x, y) <- qcheck.given(qcheck.map2(
+    fn(x, y) { #(x, y) },
+    qcheck.int_uniform(),
+    qcheck.int_uniform(),
+  ))
+  let tx = duration.seconds(x)
+  let ty = duration.seconds(y)
+  duration.compare(tx, ty) == int.compare(x, y)
+}
+
+pub fn compare_property_1_test() {
+  use #(x, y) <- qcheck.given(qcheck.map2(
+    fn(x, y) { #(x, y) },
+    qcheck.int_uniform(),
+    qcheck.int_uniform(),
+  ))
+  let tx = duration.nanoseconds(x)
+  let ty = duration.nanoseconds(y)
+  duration.compare(tx, ty) == int.compare(x, y)
 }
 
 pub fn compare_0_test() {
