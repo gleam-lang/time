@@ -1,6 +1,18 @@
 import gleam/order
 import gleam/time/duration
 import gleeunit/should
+import qcheck
+
+pub fn add_property_test() {
+  use #(x, y) <- qcheck.given(qcheck.map2(
+    fn(x, y) { #(x, y) },
+    qcheck.int_uniform(),
+    qcheck.int_uniform(),
+  ))
+  let expected = duration.nanoseconds(x + y)
+  let actual = duration.nanoseconds(x) |> duration.add(duration.nanoseconds(y))
+  expected == actual
+}
 
 pub fn add_0_test() {
   duration.nanoseconds(500_000_000)
@@ -42,6 +54,18 @@ pub fn add_6_test() {
   duration.nanoseconds(-2)
   |> duration.add(duration.nanoseconds(-3))
   |> should.equal(duration.nanoseconds(-5))
+}
+
+pub fn add_7_test() {
+  duration.nanoseconds(-1)
+  |> duration.add(duration.nanoseconds(-1_000_000_000))
+  |> should.equal(duration.nanoseconds(-1_000_000_001))
+}
+
+pub fn add_8_test() {
+  duration.nanoseconds(1)
+  |> duration.add(duration.nanoseconds(-1_000_000_000))
+  |> should.equal(duration.nanoseconds(-999_999_999))
 }
 
 pub fn to_seconds_and_nanoseconds_0_test() {

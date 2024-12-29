@@ -33,7 +33,10 @@ fn normalise(duration: Duration) -> Duration {
   let nanoseconds = duration.nanoseconds % multiplier
   let overflow = duration.nanoseconds - nanoseconds
   let seconds = duration.seconds + overflow / multiplier
-  Duration(seconds, nanoseconds)
+  case nanoseconds >= 0 {
+    True -> Duration(seconds, nanoseconds)
+    False -> Duration(seconds - 1, multiplier + nanoseconds)
+  }
 }
 
 /// Compare one duration to another, indicating whether the first is greater or
