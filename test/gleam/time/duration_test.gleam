@@ -38,6 +38,12 @@ pub fn add_5_test() {
   |> should.equal(duration.milliseconds(8))
 }
 
+pub fn add_6_test() {
+  duration.nanoseconds(-2)
+  |> duration.add(duration.nanoseconds(-3))
+  |> should.equal(duration.nanoseconds(-5))
+}
+
 pub fn to_seconds_and_nanoseconds_0_test() {
   duration.seconds(1)
   |> duration.to_seconds_and_nanoseconds()
