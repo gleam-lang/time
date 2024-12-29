@@ -5,8 +5,7 @@ import gleeunit/should
 import qcheck
 
 pub fn add_property_0_test() {
-  use #(x, y) <- qcheck.given(qcheck.map2(
-    fn(x, y) { #(x, y) },
+  use #(x, y) <- qcheck.given(qcheck.tuple2(
     qcheck.int_uniform(),
     qcheck.int_uniform(),
   ))
@@ -16,8 +15,7 @@ pub fn add_property_0_test() {
 }
 
 pub fn add_property_1_test() {
-  use #(x, y) <- qcheck.given(qcheck.map2(
-    fn(x, y) { #(x, y) },
+  use #(x, y) <- qcheck.given(qcheck.tuple2(
     qcheck.int_uniform(),
     qcheck.int_uniform(),
   ))
@@ -123,8 +121,7 @@ pub fn to_seconds_4_test() {
 }
 
 pub fn compare_property_0_test() {
-  use #(x, y) <- qcheck.given(qcheck.map2(
-    fn(x, y) { #(x, y) },
+  use #(x, y) <- qcheck.given(qcheck.tuple2(
     qcheck.int_uniform(),
     qcheck.int_uniform(),
   ))
@@ -134,8 +131,7 @@ pub fn compare_property_0_test() {
 }
 
 pub fn compare_property_1_test() {
-  use #(x, y) <- qcheck.given(qcheck.map2(
-    fn(x, y) { #(x, y) },
+  use #(x, y) <- qcheck.given(qcheck.tuple2(
     qcheck.int_uniform(),
     qcheck.int_uniform(),
   ))
