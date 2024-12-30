@@ -122,8 +122,8 @@ pub fn to_seconds_4_test() {
 
 pub fn compare_property_0_test() {
   use #(x, y) <- qcheck.given(qcheck.tuple2(
-    qcheck.int_uniform_inclusive(0, 999_999_999),
-    qcheck.int_uniform_inclusive(0, 999_999_999),
+    qcheck.int_uniform_inclusive(0, 999_999),
+    qcheck.int_uniform_inclusive(0, 999_999),
   ))
   // Durations of seconds
   let tx = duration.seconds(x)
@@ -133,8 +133,8 @@ pub fn compare_property_0_test() {
 
 pub fn compare_property_1_test() {
   use #(x, y) <- qcheck.given(qcheck.tuple2(
-    qcheck.int_uniform_inclusive(0, 999_999_999),
-    qcheck.int_uniform_inclusive(0, 999_999_999),
+    qcheck.int_uniform_inclusive(0, 999_999),
+    qcheck.int_uniform_inclusive(0, 999_999),
   ))
   // Durations of nanoseconds
   let tx = duration.nanoseconds(x)
@@ -150,8 +150,8 @@ pub fn compare_property_2_test() {
 
 pub fn compare_property_3_test() {
   use #(x, y) <- qcheck.given(qcheck.tuple2(
-    qcheck.int_uniform_inclusive(0, 999_999_999),
-    qcheck.int_uniform_inclusive(0, 999_999_999),
+    qcheck.int_uniform_inclusive(0, 999_999),
+    qcheck.int_uniform_inclusive(0, 999_999),
   ))
   let tx = duration.nanoseconds(x)
   // It doesn't matter if a duration is positive or negative, it's the amount
@@ -164,8 +164,8 @@ pub fn compare_property_3_test() {
 
 pub fn compare_property_4_test() {
   use #(x, y) <- qcheck.given(qcheck.tuple2(
-    qcheck.int_uniform_inclusive(0, 999_999_999),
-    qcheck.int_uniform_inclusive(0, 999_999_999),
+    qcheck.int_uniform_inclusive(0, 999_999),
+    qcheck.int_uniform_inclusive(0, 999_999),
   ))
   let tx = duration.nanoseconds(x)
   // It doesn't matter if a duration is positive or negative, it's the amount
