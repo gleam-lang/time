@@ -122,9 +122,10 @@ pub fn to_seconds_4_test() {
 
 pub fn compare_property_0_test() {
   use #(x, y) <- qcheck.given(qcheck.tuple2(
-    qcheck.int_uniform(),
-    qcheck.int_uniform(),
+    qcheck.int_uniform_inclusive(0, 999_999_999),
+    qcheck.int_uniform_inclusive(0, 999_999_999),
   ))
+  // Durations of seconds
   let tx = duration.seconds(x)
   let ty = duration.seconds(y)
   duration.compare(tx, ty) == int.compare(x, y)
@@ -132,12 +133,47 @@ pub fn compare_property_0_test() {
 
 pub fn compare_property_1_test() {
   use #(x, y) <- qcheck.given(qcheck.tuple2(
-    qcheck.int_uniform(),
-    qcheck.int_uniform(),
+    qcheck.int_uniform_inclusive(0, 999_999_999),
+    qcheck.int_uniform_inclusive(0, 999_999_999),
   ))
+  // Durations of nanoseconds
   let tx = duration.nanoseconds(x)
   let ty = duration.nanoseconds(y)
   duration.compare(tx, ty) == int.compare(x, y)
+}
+
+pub fn compare_property_2_test() {
+  use x <- qcheck.given(qcheck.int_uniform())
+  let tx = duration.nanoseconds(x)
+  duration.compare(tx, tx) == order.Eq
+}
+
+pub fn compare_property_3_test() {
+  use #(x, y) <- qcheck.given(qcheck.tuple2(
+    qcheck.int_uniform_inclusive(0, 999_999_999),
+    qcheck.int_uniform_inclusive(0, 999_999_999),
+  ))
+  let tx = duration.nanoseconds(x)
+  // It doesn't matter if a duration is positive or negative, it's the amount
+  // of time spanned that matters.
+  //
+  // Second durations
+  duration.compare(tx, duration.seconds(y))
+  == duration.compare(tx, duration.seconds(0 - y))
+}
+
+pub fn compare_property_4_test() {
+  use #(x, y) <- qcheck.given(qcheck.tuple2(
+    qcheck.int_uniform_inclusive(0, 999_999_999),
+    qcheck.int_uniform_inclusive(0, 999_999_999),
+  ))
+  let tx = duration.nanoseconds(x)
+  // It doesn't matter if a duration is positive or negative, it's the amount
+  // of time spanned that matters.
+  //
+  // Nanosecond durations
+  duration.compare(tx, duration.nanoseconds(y))
+  == duration.compare(tx, duration.nanoseconds(y * -1))
 }
 
 pub fn compare_0_test() {
@@ -167,6 +203,19 @@ pub fn compare_4_test() {
 
 pub fn compare_5_test() {
   duration.compare(duration.nanoseconds(1_000_000_000), duration.seconds(1))
+  |> should.equal(order.Eq)
+}
+
+pub fn compare_6_test() {
+  duration.compare(duration.seconds(-10), duration.seconds(-20))
+  |> should.equal(order.Lt)
+}
+
+pub fn compare_7_test() {
+  duration.compare(
+    duration.seconds(1) |> duration.add(duration.nanoseconds(1)),
+    duration.seconds(-1) |> duration.add(duration.nanoseconds(-1)),
+  )
   |> should.equal(order.Eq)
 }
 

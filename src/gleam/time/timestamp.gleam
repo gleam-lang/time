@@ -52,6 +52,8 @@ pub opaque type Timestamp {
   // If you have manually adjusted the seconds and nanoseconds values the
   // `normalise` function can be used to ensure the time is represented the
   // intended way, with `nanoseconds` being positive and less than 1 second.
+  //
+  // The timestamp is the sum of the seconds and the nanoseconds.
   Timestamp(seconds: Int, nanoseconds: Int)
 }
 
@@ -72,8 +74,9 @@ fn normalise(timestamp: Timestamp) -> Timestamp {
   }
 }
 
-/// Compare one timestamp to another, indicating whether the first is greater or
-/// smaller than the second.
+/// Compare one timestamp to another, indicating whether the first is further
+/// into the future (greater) or further into the past (lesser) than the
+/// second.
 ///
 /// # Examples
 ///

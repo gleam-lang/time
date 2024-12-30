@@ -19,6 +19,8 @@ pub opaque type Duration {
   // If you have manually adjusted the seconds and nanoseconds values the
   // `normalise` function can be used to ensure the time is represented the
   // intended way, with `nanoseconds` being positive and less than 1 second.
+  //
+  // The duration is the sum of the seconds and the nanoseconds.
   Duration(seconds: Int, nanoseconds: Int)
 }
 
@@ -39,8 +41,9 @@ fn normalise(duration: Duration) -> Duration {
   }
 }
 
-/// Compare one duration to another, indicating whether the first is greater or
-/// smaller than the second.
+/// Compare one duration to another, indicating whether the first spans a
+/// larger amount of time (and so is greater) or smaller amount of time (and so
+/// is lesser) than the second.
 ///
 /// # Examples
 ///
@@ -49,11 +52,25 @@ fn normalise(duration: Duration) -> Duration {
 /// // -> order.Lt
 /// ```
 ///
+/// Whether a duration is negative or positive doesn't matter for comparing
+/// them, only the amount of time spanned matters.
+///
+/// ```gleam
+/// compare(seconds(-2), seconds(1))
+/// // -> order.Gt
+/// ```
+///
 pub fn compare(left: Duration, right: Duration) -> order.Order {
-  order.break_tie(
-    int.compare(left.seconds, right.seconds),
-    int.compare(left.nanoseconds, right.nanoseconds),
-  )
+  let parts = fn(x: Duration) {
+    case x.seconds >= 0 {
+      True -> #(x.seconds, x.nanoseconds)
+      False -> #(x.seconds * -1 - 1, 1_000_000_000 - x.nanoseconds)
+    }
+  }
+  let #(ls, lns) = parts(left)
+  let #(rs, rns) = parts(right)
+  int.compare(ls, rs)
+  |> order.break_tie(int.compare(lns, rns))
 }
 
 /// Calculate the difference between two durations.
@@ -142,7 +159,7 @@ fn nanosecond_digits(n: Int, position: Int, acc: String) -> String {
 
 /// Create a duration of a number of seconds.
 pub fn seconds(amount: Int) -> Duration {
-  Duration(amount, 0) |> normalise
+  Duration(amount, 0)
 }
 
 /// Create a duration of a number of milliseconds.
