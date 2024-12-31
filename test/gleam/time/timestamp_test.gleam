@@ -3,6 +3,7 @@ import gleam/list
 import gleam/order
 import gleam/result
 import gleam/string
+import gleam/time/calendar
 import gleam/time/duration
 import gleam/time/rfc3339_generator
 import gleam/time/timestamp
@@ -161,133 +162,133 @@ pub fn system_time_0_test() {
 
 pub fn to_rfc3339_0_test() {
   timestamp.from_unix_seconds(1_735_309_467)
-  |> timestamp.to_rfc3339(0)
+  |> timestamp.to_rfc3339(calendar.zone_utc)
   |> should.equal("2024-12-27T14:24:27Z")
 }
 
 pub fn to_rfc3339_1_test() {
   timestamp.from_unix_seconds(1)
-  |> timestamp.to_rfc3339(0)
+  |> timestamp.to_rfc3339(calendar.zone_utc)
   |> should.equal("1970-01-01T00:00:01Z")
 }
 
 pub fn to_rfc3339_2_test() {
   timestamp.from_unix_seconds(0)
-  |> timestamp.to_rfc3339(0)
+  |> timestamp.to_rfc3339(calendar.zone_utc)
   |> should.equal("1970-01-01T00:00:00Z")
 }
 
 pub fn to_rfc3339_3_test() {
   timestamp.from_unix_seconds(123_456_789)
-  |> timestamp.to_rfc3339(0)
+  |> timestamp.to_rfc3339(calendar.zone_utc)
   |> should.equal("1973-11-29T21:33:09Z")
 }
 
 pub fn to_rfc3339_4_test() {
   timestamp.from_unix_seconds(31_560_000)
-  |> timestamp.to_rfc3339(0)
+  |> timestamp.to_rfc3339(calendar.zone_utc)
   |> should.equal("1971-01-01T06:40:00Z")
 }
 
 pub fn to_rfc3339_5_test() {
   timestamp.from_unix_seconds(-12_345_678)
-  |> timestamp.to_rfc3339(0)
+  |> timestamp.to_rfc3339(calendar.zone_utc)
   |> should.equal("1969-08-11T02:38:42Z")
 }
 
 pub fn to_rfc3339_6_test() {
   timestamp.from_unix_seconds(-1)
-  |> timestamp.to_rfc3339(0)
+  |> timestamp.to_rfc3339(calendar.zone_utc)
   |> should.equal("1969-12-31T23:59:59Z")
 }
 
 pub fn to_rfc3339_7_test() {
   timestamp.from_unix_seconds(60 * 60 + 60 * 5)
-  |> timestamp.to_rfc3339(65)
+  |> timestamp.to_rfc3339(calendar.TimeZone(65, []))
   |> should.equal("1970-01-01T00:00:00+01:05")
 }
 
 pub fn to_rfc3339_8_test() {
   timestamp.from_unix_seconds(0)
-  |> timestamp.to_rfc3339(-120)
+  |> timestamp.to_rfc3339(calendar.TimeZone(-120, []))
   |> should.equal("1970-01-01T02:00:00-02:00")
 }
 
 pub fn to_rfc3339_9_test() {
   timestamp.from_unix_seconds(-62_167_219_200)
-  |> timestamp.to_rfc3339(0)
+  |> timestamp.to_rfc3339(calendar.zone_utc)
   |> should.equal("0000-01-01T00:00:00Z")
 }
 
 pub fn to_rfc3339_10_test() {
   timestamp.from_unix_seconds(-62_135_596_800)
-  |> timestamp.to_rfc3339(0)
+  |> timestamp.to_rfc3339(calendar.zone_utc)
   |> should.equal("0001-01-01T00:00:00Z")
 }
 
 pub fn to_rfc3339_11_test() {
   timestamp.from_unix_seconds(-61_851_600_000)
-  |> timestamp.to_rfc3339(0)
+  |> timestamp.to_rfc3339(calendar.zone_utc)
   |> should.equal("0010-01-01T00:00:00Z")
 }
 
 pub fn to_rfc3339_12_test() {
   timestamp.from_unix_seconds(-59_011_459_200)
-  |> timestamp.to_rfc3339(0)
+  |> timestamp.to_rfc3339(calendar.zone_utc)
   |> should.equal("0100-01-01T00:00:00Z")
 }
 
 pub fn to_rfc3339_13_test() {
   timestamp.from_unix_seconds_and_nanoseconds(0, 1)
-  |> timestamp.to_rfc3339(0)
+  |> timestamp.to_rfc3339(calendar.zone_utc)
   |> should.equal("1970-01-01T00:00:00.000000001Z")
 }
 
 pub fn to_rfc3339_14_test() {
   timestamp.from_unix_seconds_and_nanoseconds(-1, 12)
-  |> timestamp.to_rfc3339(0)
+  |> timestamp.to_rfc3339(calendar.zone_utc)
   |> should.equal("1969-12-31T23:59:59.000000012Z")
 }
 
 pub fn to_rfc3339_15_test() {
   timestamp.from_unix_seconds_and_nanoseconds(1, 123)
-  |> timestamp.to_rfc3339(0)
+  |> timestamp.to_rfc3339(calendar.zone_utc)
   |> should.equal("1970-01-01T00:00:01.000000123Z")
 }
 
 pub fn to_rfc3339_16_test() {
   timestamp.from_unix_seconds_and_nanoseconds(0, 1230)
-  |> timestamp.to_rfc3339(0)
+  |> timestamp.to_rfc3339(calendar.zone_utc)
   |> should.equal("1970-01-01T00:00:00.00000123Z")
 }
 
 pub fn to_rfc3339_17_test() {
   timestamp.from_unix_seconds_and_nanoseconds(0, 500_600_000)
-  |> timestamp.to_rfc3339(0)
+  |> timestamp.to_rfc3339(calendar.zone_utc)
   |> should.equal("1970-01-01T00:00:00.5006Z")
 }
 
 pub fn to_rfc3339_18_test() {
   timestamp.from_unix_seconds_and_nanoseconds(0, 500_006)
-  |> timestamp.to_rfc3339(0)
+  |> timestamp.to_rfc3339(calendar.zone_utc)
   |> should.equal("1970-01-01T00:00:00.000500006Z")
 }
 
 pub fn to_rfc3339_19_test() {
   timestamp.from_unix_seconds_and_nanoseconds(0, 999_999_999)
-  |> timestamp.to_rfc3339(0)
+  |> timestamp.to_rfc3339(calendar.zone_utc)
   |> should.equal("1970-01-01T00:00:00.999999999Z")
 }
 
 pub fn to_rfc3339_20_test() {
   timestamp.from_unix_seconds_and_nanoseconds(0, 0)
-  |> timestamp.to_rfc3339(0)
+  |> timestamp.to_rfc3339(calendar.zone_utc)
   |> should.equal("1970-01-01T00:00:00Z")
 }
 
 pub fn to_rfc3339_21_test() {
   timestamp.from_unix_seconds_and_nanoseconds(0, 1_000_000_001)
-  |> timestamp.to_rfc3339(0)
+  |> timestamp.to_rfc3339(calendar.zone_utc)
   |> should.equal("1970-01-01T00:00:01.000000001Z")
 }
 
@@ -332,7 +333,7 @@ pub fn timestamp_rfc3339_string_timestamp_roundtrip_property_test() {
 
   let assert Ok(parsed_timestamp) =
     timestamp
-    |> timestamp.to_rfc3339(0)
+    |> timestamp.to_rfc3339(calendar.zone_utc)
     |> timestamp.parse_rfc3339
 
   timestamp.compare(timestamp, parsed_timestamp) == order.Eq
@@ -348,7 +349,9 @@ pub fn rfc3339_string_timestamp_rfc3339_string_roundtrip_property_test() {
   let assert Ok(original_timestamp) = timestamp.parse_rfc3339(date_time)
 
   let assert Ok(roundtrip_timestamp) =
-    original_timestamp |> timestamp.to_rfc3339(0) |> timestamp.parse_rfc3339
+    original_timestamp
+    |> timestamp.to_rfc3339(calendar.zone_utc)
+    |> timestamp.parse_rfc3339
 
   timestamp.compare(original_timestamp, roundtrip_timestamp) == order.Eq
 }
@@ -635,33 +638,47 @@ pub fn parse_rfc3339_docs_example_2_test() {
   let assert Error(Nil) = timestamp.parse_rfc3339("1995-10-31")
 }
 
-// Checking the normalising.
-
 pub fn normalise_negative_millis_test() {
   timestamp.from_unix_seconds_and_nanoseconds(1, -1_000_000_000)
   |> should.equal(timestamp.from_unix_seconds_and_nanoseconds(0, 0))
+}
 
+pub fn normalise_negative_millis_1_test() {
   timestamp.from_unix_seconds_and_nanoseconds(1, -1_400_000_000)
   |> should.equal(timestamp.from_unix_seconds_and_nanoseconds(-1, 600_000_000))
+}
 
+pub fn normalise_negative_millis_2_test() {
   timestamp.from_unix_seconds_and_nanoseconds(1, -2_600_000_000)
   |> should.equal(timestamp.from_unix_seconds_and_nanoseconds(-2, 400_000_000))
+}
 
+pub fn normalise_negative_millis_3_test() {
   timestamp.from_unix_seconds_and_nanoseconds(0, -1_000_000_000)
   |> should.equal(timestamp.from_unix_seconds_and_nanoseconds(-1, 0))
+}
 
+pub fn normalise_negative_millis_4_test() {
   timestamp.from_unix_seconds_and_nanoseconds(0, -1_400_000_000)
   |> should.equal(timestamp.from_unix_seconds_and_nanoseconds(-2, 600_000_000))
+}
 
+pub fn normalise_negative_millis_5_test() {
   timestamp.from_unix_seconds_and_nanoseconds(0, -2_600_000_000)
   |> should.equal(timestamp.from_unix_seconds_and_nanoseconds(-3, 400_000_000))
+}
 
+pub fn normalise_negative_millis_6_test() {
   timestamp.from_unix_seconds_and_nanoseconds(-1, -1_000_000_000)
   |> should.equal(timestamp.from_unix_seconds_and_nanoseconds(-2, 0))
+}
 
+pub fn normalise_negative_millis_7_test() {
   timestamp.from_unix_seconds_and_nanoseconds(-1, -1_400_000_000)
   |> should.equal(timestamp.from_unix_seconds_and_nanoseconds(-3, 600_000_000))
+}
 
+pub fn normalise_negative_millis_8_test() {
   timestamp.from_unix_seconds_and_nanoseconds(-1, -2_600_000_000)
   |> should.equal(timestamp.from_unix_seconds_and_nanoseconds(-4, 400_000_000))
 }
@@ -669,28 +686,44 @@ pub fn normalise_negative_millis_test() {
 pub fn normalise_positive_millis_test() {
   timestamp.from_unix_seconds_and_nanoseconds(1, 1_000_000_000)
   |> should.equal(timestamp.from_unix_seconds_and_nanoseconds(2, 0))
+}
 
+pub fn normalise_positive_millis_1_test() {
   timestamp.from_unix_seconds_and_nanoseconds(1, 1_400_000_000)
   |> should.equal(timestamp.from_unix_seconds_and_nanoseconds(2, 400_000_000))
+}
 
+pub fn normalise_positive_millis_2_test() {
   timestamp.from_unix_seconds_and_nanoseconds(1, 2_600_000_000)
   |> should.equal(timestamp.from_unix_seconds_and_nanoseconds(3, 600_000_000))
+}
 
+pub fn normalise_positive_millis_3_test() {
   timestamp.from_unix_seconds_and_nanoseconds(0, 1_000_000_000)
   |> should.equal(timestamp.from_unix_seconds_and_nanoseconds(1, 0))
+}
 
+pub fn normalise_positive_millis_4_test() {
   timestamp.from_unix_seconds_and_nanoseconds(0, 1_400_000_000)
   |> should.equal(timestamp.from_unix_seconds_and_nanoseconds(1, 400_000_000))
+}
 
+pub fn normalise_positive_millis_5_test() {
   timestamp.from_unix_seconds_and_nanoseconds(0, 2_600_000_000)
   |> should.equal(timestamp.from_unix_seconds_and_nanoseconds(2, 600_000_000))
+}
 
+pub fn normalise_positive_millis_6_test() {
   timestamp.from_unix_seconds_and_nanoseconds(-1, 1_000_000_000)
   |> should.equal(timestamp.from_unix_seconds_and_nanoseconds(0, 0))
+}
 
+pub fn normalise_positive_millis_7_test() {
   timestamp.from_unix_seconds_and_nanoseconds(-1, 1_400_000_000)
   |> should.equal(timestamp.from_unix_seconds_and_nanoseconds(0, 400_000_000))
+}
 
+pub fn normalise_positive_millis_8_test() {
   timestamp.from_unix_seconds_and_nanoseconds(-1, 2_600_000_000)
   |> should.equal(timestamp.from_unix_seconds_and_nanoseconds(1, 600_000_000))
 }

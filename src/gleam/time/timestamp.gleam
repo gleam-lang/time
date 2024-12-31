@@ -5,6 +5,7 @@ import gleam/list
 import gleam/order
 import gleam/result
 import gleam/string
+import gleam/time/calendar
 import gleam/time/duration.{type Duration}
 
 const seconds_per_day: Int = 86_400
@@ -192,13 +193,11 @@ pub fn add(timestamp: Timestamp, duration: Duration) -> Timestamp {
 /// // -> "1970-01-01T00:00:00Z"
 /// ```
 ///
-pub fn to_rfc3339(timestamp: Timestamp, offset_minutes offset: Int) -> String {
-  let total = timestamp.seconds - { offset * 60 }
-  let seconds = modulo(total, 60)
-  let total_minutes = floored_div(total, 60.0)
-  let minutes = modulo(total, 60 * 60) / 60
-  let hours = modulo(total, 24 * 60 * 60) / { 60 * 60 }
-  let #(years, months, days) = to_civil(total_minutes)
+pub fn to_rfc3339(timestamp: Timestamp, zone: calendar.TimeZone) -> String {
+  let offset = calculate_offset(timestamp, zone)
+  let #(years, months, days, hours, minutes, seconds) =
+    to_calendar_from_offset(timestamp, offset)
+
   let offset_minutes = modulo(offset, 60)
   let offset_hours = int.absolute_value(floored_div(offset, 60.0))
 
@@ -218,6 +217,71 @@ pub fn to_rfc3339(timestamp: Timestamp, offset_minutes offset: Int) -> String {
 
 fn pad_digit(digit: Int, to desired_length: Int) -> String {
   int.to_string(digit) |> string.pad_start(desired_length, "0")
+}
+
+// TODO: implement
+// TODO: test
+// TODO: document
+pub fn from_rfc3339(timestamp: String) -> Timestamp {
+  todo
+}
+
+// TODO: implement
+// TODO: test
+// TODO: document
+pub fn to_calendar(
+  timestamp: Timestamp,
+  zone: calendar.TimeZone,
+) -> #(calendar.Date, calendar.TimeOfDay) {
+  let offset = calculate_offset(timestamp, zone)
+  let #(year, month, day, hours, minutes, seconds) =
+    to_calendar_from_offset(timestamp, offset)
+  let month = case month {
+    1 -> calendar.January
+    2 -> calendar.February
+    3 -> calendar.March
+    4 -> calendar.April
+    5 -> calendar.May
+    6 -> calendar.June
+    7 -> calendar.July
+    8 -> calendar.August
+    9 -> calendar.September
+    10 -> calendar.October
+    11 -> calendar.November
+    _ -> calendar.December
+  }
+  let date = calendar.Date(year:, month:, day:)
+  let time = calendar.TimeOfDay(hours:, minutes:, seconds:)
+  #(date, time)
+}
+
+fn calculate_offset(now: Timestamp, zone: calendar.TimeZone) -> Int {
+  // TODO: take into account the zone eras
+  zone.fixed_offset_minutes
+}
+
+fn to_calendar_from_offset(
+  timestamp: Timestamp,
+  offset: Int,
+) -> #(Int, Int, Int, Int, Int, Int) {
+  let total = timestamp.seconds - { offset * 60 }
+  let seconds = modulo(total, 60)
+  let total_minutes = floored_div(total, 60.0)
+  let minutes = modulo(total, 60 * 60) / 60
+  let hours = modulo(total, 24 * 60 * 60) / { 60 * 60 }
+  let #(year, month, day) = to_civil(total_minutes)
+  #(year, month, day, hours, minutes, seconds)
+}
+
+// TODO: implement
+// TODO: test
+// TODO: document
+pub fn from_calendar(
+  date: calendar.Date,
+  time: calendar.TimeOfDay,
+  zone: calendar.TimeZone,
+) -> #(calendar.Date, calendar.TimeOfDay) {
+  todo
 }
 
 fn modulo(n: Int, m: Int) -> Int {
