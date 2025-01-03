@@ -186,6 +186,24 @@ pub fn add(timestamp: Timestamp, duration: Duration) -> Timestamp {
 /// The output of this function is also ISO 8601 compatible so long as the
 /// offset not negative.
 ///
+/// If you are making an API such as a HTTP JSON API you are encouraged to use
+/// Unix timestamps instead of this format or ISO 8601. Unix timestamps are a
+/// better choice as they don't contain offset information. Consider:
+///
+/// - UTC offsets are not time zones. This does not and cannot tell us the time
+///   zone in which the date was recorded. So what are we supposed to do with
+///   this information?
+/// - Users typically want dates formatted according to their local time zone.
+///   What if the provided UTC offset is different from the current user's time
+///   zone? What are we supposed to do with it then?
+/// - Despite it being useless (or worse, a source of bugs), the UTC offset
+///   creates a larger payload to transfer.
+///
+/// They also uses more memory than a unix timestamp. The way they are better
+/// than Unix timestamp is that it is easier for a human to read them, but
+/// this is a hinderance that tooling can remedy, and APIs are not primarily
+/// for humans.
+///
 /// # Examples
 ///
 /// ```gleam
