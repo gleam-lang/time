@@ -177,8 +177,8 @@ pub fn add(timestamp: Timestamp, duration: Duration) -> Timestamp {
 /// // -> "1970-01-01T00:00:00Z"
 /// ```
 ///
-pub fn to_rfc3339(timestamp: Timestamp, zone: calendar.TimeZone) -> String {
-  let offset = calculate_offset(timestamp, zone)
+pub fn to_rfc3339(timestamp: Timestamp, offset: Duration) -> String {
+  let offset = duration_to_minutes(offset)
   let #(years, months, days, hours, minutes, seconds) =
     to_calendar_from_offset(timestamp, offset)
 
@@ -200,18 +200,17 @@ pub fn to_rfc3339(timestamp: Timestamp, zone: calendar.TimeZone) -> String {
 // TODO: implement
 // TODO: test
 // TODO: document
-pub fn from_rfc3339(timestamp: String) -> Timestamp {
-  todo
-}
+// pub fn parse_rfc3339(timestamp: String) -> Timestamp {
+//   todo
+// }
 
-// TODO: implement
 // TODO: test
 // TODO: document
 pub fn to_calendar(
   timestamp: Timestamp,
-  zone: calendar.TimeZone,
+  offset: Duration,
 ) -> #(calendar.Date, calendar.TimeOfDay) {
-  let offset = calculate_offset(timestamp, zone)
+  let offset = duration_to_minutes(offset)
   let #(year, month, day, hours, minutes, seconds) =
     to_calendar_from_offset(timestamp, offset)
   let month = case month {
@@ -233,9 +232,8 @@ pub fn to_calendar(
   #(date, time)
 }
 
-fn calculate_offset(now: Timestamp, zone: calendar.TimeZone) -> Int {
-  // TODO: take into account the zone eras
-  zone.fixed_offset_minutes
+fn duration_to_minutes(duration: duration.Duration) -> Int {
+  float.round(duration.to_seconds(duration) /. 60.0)
 }
 
 fn to_calendar_from_offset(
@@ -257,7 +255,7 @@ fn to_calendar_from_offset(
 pub fn from_calendar(
   date: calendar.Date,
   time: calendar.TimeOfDay,
-  zone: calendar.TimeZone,
+  offset: Duration,
 ) -> #(calendar.Date, calendar.TimeOfDay) {
   todo
 }
