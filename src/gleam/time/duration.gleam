@@ -203,3 +203,6 @@ pub fn to_seconds(duration: Duration) -> Float {
 pub fn to_seconds_and_nanoseconds(duration: Duration) -> #(Int, Int) {
   #(duration.seconds, duration.nanoseconds)
 }
+
+@internal
+pub const empty = Duration(0, 0)

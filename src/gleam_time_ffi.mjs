@@ -5,3 +5,7 @@ export function system_time() {
   const seconds = (now - milliseconds) / 1_000;
   return [seconds, nanoseconds];
 }
+
+export function local_time_offset_seconds() {
+  return new Date().getTimezoneOffset() * 60;
+}
