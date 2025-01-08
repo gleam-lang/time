@@ -1,12 +1,23 @@
-//// The main way that time is represented in this package is with the
-//// `Timestamp` type. Timestamps are great for computers to work with but
-//// they're hard for humans to understand, so this module provides some types
-//// that you can convert timestamps before showing them to humans.
+//// This module is for working with the Gregorian calendar, established by
+//// Pope Gregory XIII in 1582!
 ////
-//// Calendar time data structures are error prone and are ambiguous without
-//// up-to-date time zone offset information, so where possible only use them
-//// for interacting with humans, or for times that don't corrospond with a
-//// specific single point in time (e.g. 3pm on no particular day).
+//// ## When should you use this module?
+////
+//// The types in this module type are useful when you want to communicate time
+//// to a human reader, but they are not ideal for computers to work with.
+//// Disadvantages of calendar time types include:
+////
+//// - They are ambiguous if you don't know what time-zone they are for.
+//// - The type permits invalid states. e.g. `days` could be set to the number
+////   32, but this should not be possible!
+//// - There is not a single unique canonical value for each point in time,
+////   thanks to time zones. Two different `Date` + `TimeOfDay` value pairs
+////   could represent the 
+////
+//// Prefer to represent your time using the `Timestamp` type, and convert it
+//// only to calendar types when you need to display them.
+////
+//// ## Time zone offsets
 ////
 //// This package includes the `utc_offset` value and the `local_offset`
 //// function, which get the offset for the UTC time zone and time zone the
@@ -19,20 +30,31 @@
 //// [IANA Time Zone Database](https://www.iana.org/time-zones), or from the
 //// website visitor's web browser.
 ////
+//// ## Use in APIs
+////
 //// If you are making an API such as a HTTP JSON API you are encouraged to use
 //// Unix timestamps instead of calendar times.
 
 import gleam/time/duration
 
+/// The Gregorian calendar date. Ambiguous without a time zone.
+///
+/// Prefer to represent your time using the `Timestamp` type, and convert it
+/// only to calendar types when you need to display them. See the documentation
+/// for this module for more information.
+///
+pub type Date {
+  Date(year: Int, month: Month, day: Int)
+}
+
+/// The time of day. Ambiguous without a date and time zone. 
+///
 pub type TimeOfDay {
   // TODO: add nanoseconds
   TimeOfDay(hours: Int, minutes: Int, seconds: Int)
 }
 
-pub type Date {
-  Date(year: Int, month: Month, day: Int)
-}
-
+/// The 12 months of the year.
 pub type Month {
   January
   February
@@ -57,8 +79,12 @@ pub type Month {
 ///
 pub const utc_offset = duration.empty
 
-// TODO: test
-// TODO: document
+/// Get the offset for the computer's currently configured time zone.
+///
+/// Note this may not be the time zone that is correct to use for your user.
+/// For example, if you are making a web application that runs on a server you
+/// want _their_ computer's time zone, not yours.
+///
 pub fn local_offset() -> duration.Duration {
   duration.seconds(local_time_offset_seconds())
 }

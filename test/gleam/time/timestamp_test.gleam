@@ -216,25 +216,25 @@ pub fn to_rfc3339_8_test() {
 
 pub fn to_rfc3339_9_test() {
   timestamp.from_unix_seconds(-62_167_219_200)
-  |> timestamp.to_rfc3339(calendar.zone_utc)
+  |> timestamp.to_rfc3339(calendar.utc_offset)
   |> should.equal("0000-01-01T00:00:00Z")
 }
 
 pub fn to_rfc3339_10_test() {
   timestamp.from_unix_seconds(-62_135_596_800)
-  |> timestamp.to_rfc3339(calendar.zone_utc)
+  |> timestamp.to_rfc3339(calendar.utc_offset)
   |> should.equal("0001-01-01T00:00:00Z")
 }
 
 pub fn to_rfc3339_11_test() {
   timestamp.from_unix_seconds(-61_851_600_000)
-  |> timestamp.to_rfc3339(calendar.zone_utc)
+  |> timestamp.to_rfc3339(calendar.utc_offset)
   |> should.equal("0010-01-01T00:00:00Z")
 }
 
 pub fn to_rfc3339_12_test() {
   timestamp.from_unix_seconds(-59_011_459_200)
-  |> timestamp.to_rfc3339(calendar.zone_utc)
+  |> timestamp.to_rfc3339(calendar.utc_offset)
   |> should.equal("0100-01-01T00:00:00Z")
 }
 
@@ -281,7 +281,7 @@ pub fn timestamp_rfc3339_timestamp_roundtrip_property_test() {
 
   let assert Ok(parsed_timestamp) =
     timestamp
-    |> timestamp.to_rfc3339(calendar.zone_utc)
+    |> timestamp.to_rfc3339(calendar.utc_offset)
     |> timestamp.parse_rfc3339
 
   timestamp.compare(timestamp, parsed_timestamp) == order.Eq
@@ -294,7 +294,7 @@ pub fn rfc3339_string_timestamp_rfc3339_string_round_tripping_test() {
     rfc3339_generator.timestamp_with_zero_nanoseconds_generator(),
   )
   let assert Ok(parsed_timestamp) =
-    timestamp.to_rfc3339(timestamp, calendar.zone_utc)
+    timestamp.to_rfc3339(timestamp, calendar.utc_offset)
     |> timestamp.parse_rfc3339()
 
   timestamp == parsed_timestamp
