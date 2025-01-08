@@ -216,79 +216,79 @@ pub fn to_rfc3339_8_test() {
 
 pub fn to_rfc3339_9_test() {
   timestamp.from_unix_seconds(-62_167_219_200)
-  |> timestamp.to_rfc3339(calendar.zone_utc)
+  |> timestamp.to_rfc3339(calendar.utc_offset)
   |> should.equal("0000-01-01T00:00:00Z")
 }
 
 pub fn to_rfc3339_10_test() {
   timestamp.from_unix_seconds(-62_135_596_800)
-  |> timestamp.to_rfc3339(calendar.zone_utc)
+  |> timestamp.to_rfc3339(calendar.utc_offset)
   |> should.equal("0001-01-01T00:00:00Z")
 }
 
 pub fn to_rfc3339_11_test() {
   timestamp.from_unix_seconds(-61_851_600_000)
-  |> timestamp.to_rfc3339(calendar.zone_utc)
+  |> timestamp.to_rfc3339(calendar.utc_offset)
   |> should.equal("0010-01-01T00:00:00Z")
 }
 
 pub fn to_rfc3339_12_test() {
   timestamp.from_unix_seconds(-59_011_459_200)
-  |> timestamp.to_rfc3339(calendar.zone_utc)
+  |> timestamp.to_rfc3339(calendar.utc_offset)
   |> should.equal("0100-01-01T00:00:00Z")
 }
 
 pub fn to_rfc3339_13_test() {
   timestamp.from_unix_seconds_and_nanoseconds(0, 1)
-  |> timestamp.to_rfc3339(calendar.zone_utc)
+  |> timestamp.to_rfc3339(calendar.utc_offset)
   |> should.equal("1970-01-01T00:00:00.000000001Z")
 }
 
 pub fn to_rfc3339_14_test() {
   timestamp.from_unix_seconds_and_nanoseconds(-1, 12)
-  |> timestamp.to_rfc3339(calendar.zone_utc)
+  |> timestamp.to_rfc3339(calendar.utc_offset)
   |> should.equal("1969-12-31T23:59:59.000000012Z")
 }
 
 pub fn to_rfc3339_15_test() {
   timestamp.from_unix_seconds_and_nanoseconds(1, 123)
-  |> timestamp.to_rfc3339(calendar.zone_utc)
+  |> timestamp.to_rfc3339(calendar.utc_offset)
   |> should.equal("1970-01-01T00:00:01.000000123Z")
 }
 
 pub fn to_rfc3339_16_test() {
   timestamp.from_unix_seconds_and_nanoseconds(0, 1230)
-  |> timestamp.to_rfc3339(calendar.zone_utc)
+  |> timestamp.to_rfc3339(calendar.utc_offset)
   |> should.equal("1970-01-01T00:00:00.00000123Z")
 }
 
 pub fn to_rfc3339_17_test() {
   timestamp.from_unix_seconds_and_nanoseconds(0, 500_600_000)
-  |> timestamp.to_rfc3339(calendar.zone_utc)
+  |> timestamp.to_rfc3339(calendar.utc_offset)
   |> should.equal("1970-01-01T00:00:00.5006Z")
 }
 
 pub fn to_rfc3339_18_test() {
   timestamp.from_unix_seconds_and_nanoseconds(0, 500_006)
-  |> timestamp.to_rfc3339(calendar.zone_utc)
+  |> timestamp.to_rfc3339(calendar.utc_offset)
   |> should.equal("1970-01-01T00:00:00.000500006Z")
 }
 
 pub fn to_rfc3339_19_test() {
   timestamp.from_unix_seconds_and_nanoseconds(0, 999_999_999)
-  |> timestamp.to_rfc3339(calendar.zone_utc)
+  |> timestamp.to_rfc3339(calendar.utc_offset)
   |> should.equal("1970-01-01T00:00:00.999999999Z")
 }
 
 pub fn to_rfc3339_20_test() {
   timestamp.from_unix_seconds_and_nanoseconds(0, 0)
-  |> timestamp.to_rfc3339(calendar.zone_utc)
+  |> timestamp.to_rfc3339(calendar.utc_offset)
   |> should.equal("1970-01-01T00:00:00Z")
 }
 
 pub fn to_rfc3339_21_test() {
   timestamp.from_unix_seconds_and_nanoseconds(0, 1_000_000_001)
-  |> timestamp.to_rfc3339(calendar.zone_utc)
+  |> timestamp.to_rfc3339(calendar.utc_offset)
   |> should.equal("1970-01-01T00:00:01.000000001Z")
 }
 
@@ -333,7 +333,7 @@ pub fn timestamp_rfc3339_string_timestamp_roundtrip_property_test() {
 
   let assert Ok(parsed_timestamp) =
     timestamp
-    |> timestamp.to_rfc3339(calendar.zone_utc)
+    |> timestamp.to_rfc3339(calendar.utc_offset)
     |> timestamp.parse_rfc3339
 
   timestamp.compare(timestamp, parsed_timestamp) == order.Eq
@@ -350,7 +350,7 @@ pub fn rfc3339_string_timestamp_rfc3339_string_roundtrip_property_test() {
 
   let assert Ok(roundtrip_timestamp) =
     original_timestamp
-    |> timestamp.to_rfc3339(calendar.zone_utc)
+    |> timestamp.to_rfc3339(calendar.utc_offset)
     |> timestamp.parse_rfc3339
 
   timestamp.compare(original_timestamp, roundtrip_timestamp) == order.Eq
