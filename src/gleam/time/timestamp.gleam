@@ -1,8 +1,41 @@
+import gleam/bit_array
 import gleam/float
 import gleam/int
 import gleam/order
+import gleam/result
 import gleam/string
 import gleam/time/duration.{type Duration}
+
+const seconds_per_day: Int = 86_400
+
+const seconds_per_hour: Int = 3600
+
+const seconds_per_minute: Int = 60
+
+const nanoseconds_per_day: Int = 86_400_000_000_000
+
+const nanoseconds_per_second: Int = 1_000_000_000
+
+/// The `:` character as a byte
+const byte_colon: Int = 0x3A
+
+/// The `-` character as a byte
+const byte_minus: Int = 0x2D
+
+/// The `0` character as a byte
+const byte_zero: Int = 0x30
+
+/// The `9` character as a byte
+const byte_nine: Int = 0x39
+
+/// The `t` character as a byte
+const byte_t_lowercase: Int = 0x74
+
+/// The `T` character as a byte
+const byte_t_uppercase: Int = 0x54
+
+/// The Julian seconds of the UNIX epoch (Julian day is 2_440_588)
+const julian_seconds_unix_epoch: Int = 210_866_803_200
 
 /// A timestamp represents a moment in time, represented as an amount of time
 /// since 00:00:00 UTC on 1 January 1970, also known as the _Unix epoch_.
@@ -227,12 +260,388 @@ fn to_civil(minutes: Int) -> #(Int, Int, Int) {
   #(year, month, day)
 }
 
-// TODO: docs
-// TODO: test
-// TODO: implement
-// pub fn parse_rfc3339(input: String) -> Result(Timestamp, Nil) {
-//   todo
-// }
+/// Parses an RFC 3339 formatted time string into a `Timestamp`.
+/// 
+/// # Examples
+///
+/// ```gleam
+/// let assert Ok(ts) = parse_rfc3339("1970-01-01T00:00:01.12345678999Z")
+/// to_unix_seconds_and_nanoseconds(ts)
+/// // -> #(1, 123_456_789)
+/// 
+/// let assert Ok(ts) = parse_rfc3339("2025-01-10t15:54:30-05:15")
+/// to_unix_seconds_and_nanoseconds(ts)
+/// // -> #(1_736_543_370, 0)
+/// 
+/// let assert Error(Nil) = timestamp.parse_rfc3339("1995-10-31")
+/// ```
+///
+/// # Notes
+/// 
+/// - Follows the grammar specified in section 5.6 Internet Date/Time Format of 
+///   RFC 3339 (https://datatracker.ietf.org/doc/html/rfc3339#section-5.6).
+/// - The `T` and `Z` characters may alternatively be lower case `t` or `z`, 
+///   respectively.
+/// - Full dates and full times must be separated by `T` or `t`, not any other 
+///   character such as a space (` `).
+/// - Leap seconds rules are not considered.  That is, any timestamp may 
+///   specify digts `00` - `60` for the seconds.
+/// - Any part of a fractional second that cannot be represented in the 
+///   nanosecond precision is tructated.  That is, for the time string, 
+///   `"1970-01-01T00:00:00.1234567899Z"`, the fractional second `.1234567899` 
+///   will be represented as `123_456_789` in the `Timestamp`.
+/// 
+pub fn parse_rfc3339(input: String) -> Result(Timestamp, Nil) {
+  let bytes = bit_array.from_string(input)
+
+  // Date 
+  use #(year, bytes) <- result.try(parse_year(from: bytes))
+  use bytes <- result.try(accept_byte(from: bytes, value: byte_minus))
+  use #(month, bytes) <- result.try(parse_month(from: bytes))
+  use bytes <- result.try(accept_byte(from: bytes, value: byte_minus))
+  use #(day, bytes) <- result.try(parse_day(from: bytes, year:, month:))
+
+  use bytes <- result.try(accept_date_time_separator(from: bytes))
+
+  // Time 
+  use #(hours, bytes) <- result.try(parse_hours(from: bytes))
+  use bytes <- result.try(accept_byte(from: bytes, value: byte_colon))
+  use #(minutes, bytes) <- result.try(parse_minutes(from: bytes))
+  use bytes <- result.try(accept_byte(from: bytes, value: byte_colon))
+  use #(seconds, bytes) <- result.try(parse_seconds(from: bytes))
+  use #(second_fraction_as_nanoseconds, bytes) <- result.try(
+    parse_second_fraction_as_nanoseconds(from: bytes),
+  )
+
+  // Offset
+  use #(offset_seconds, bytes) <- result.try(parse_offset(from: bytes))
+
+  // Done
+  use Nil <- result.try(accept_empty(bytes))
+
+  Ok(from_date_time(
+    year:,
+    month:,
+    day:,
+    hours:,
+    minutes:,
+    seconds:,
+    second_fraction_as_nanoseconds:,
+    offset_seconds:,
+  ))
+}
+
+fn parse_year(from bytes: BitArray) -> Result(#(Int, BitArray), Nil) {
+  parse_digits(from: bytes, count: 4)
+}
+
+fn parse_month(from bytes: BitArray) -> Result(#(Int, BitArray), Nil) {
+  use #(month, bytes) <- result.try(parse_digits(from: bytes, count: 2))
+  case 1 <= month && month <= 12 {
+    True -> Ok(#(month, bytes))
+    False -> Error(Nil)
+  }
+}
+
+fn parse_day(
+  from bytes: BitArray,
+  year year,
+  month month,
+) -> Result(#(Int, BitArray), Nil) {
+  use #(day, bytes) <- result.try(parse_digits(from: bytes, count: 2))
+
+  let is_leap_year = is_leap_year(year)
+
+  use max_day <- result.try(case month {
+    1 | 3 | 5 | 7 | 8 | 10 | 12 -> Ok(31)
+    4 | 6 | 9 | 11 -> Ok(30)
+    2 if is_leap_year -> Ok(29)
+    2 -> Ok(28)
+    _ -> Error(Nil)
+  })
+
+  case 1 <= day && day <= max_day {
+    True -> Ok(#(day, bytes))
+    False -> Error(Nil)
+  }
+}
+
+// Implementation from RFC 3339 Appendix C
+fn is_leap_year(year: Int) -> Bool {
+  year % 4 == 0 && { year % 100 != 0 || year % 400 == 0 }
+}
+
+fn parse_hours(from bytes: BitArray) -> Result(#(Int, BitArray), Nil) {
+  use #(hours, bytes) <- result.try(parse_digits(from: bytes, count: 2))
+  case 0 <= hours && hours <= 23 {
+    True -> Ok(#(hours, bytes))
+    False -> Error(Nil)
+  }
+}
+
+fn parse_minutes(from bytes: BitArray) -> Result(#(Int, BitArray), Nil) {
+  use #(minutes, bytes) <- result.try(parse_digits(from: bytes, count: 2))
+  case 0 <= minutes && minutes <= 59 {
+    True -> Ok(#(minutes, bytes))
+    False -> Error(Nil)
+  }
+}
+
+fn parse_seconds(from bytes: BitArray) -> Result(#(Int, BitArray), Nil) {
+  use #(seconds, bytes) <- result.try(parse_digits(from: bytes, count: 2))
+  // Max of 60 for leap seconds.  We don't bother to check if this leap second
+  // actually occurred in the past or not.
+  case 0 <= seconds && seconds <= 60 {
+    True -> Ok(#(seconds, bytes))
+    False -> Error(Nil)
+  }
+}
+
+// Truncates any part of the fraction that is beyond the nanosecond precision.
+fn parse_second_fraction_as_nanoseconds(from bytes: BitArray) {
+  case bytes {
+    <<".", byte, remaining_bytes:bytes>>
+      if byte_zero <= byte && byte <= byte_nine
+    -> {
+      do_parse_second_fraction_as_nanoseconds(
+        from: <<byte, remaining_bytes:bits>>,
+        acc: 0,
+        pow: nanoseconds_per_second,
+        k: 0,
+      )
+    }
+    // bytes starts with a ".", which should introduce a fraction, but it does
+    // not, and so it is an ill-formed input.
+    <<".", _:bytes>> -> Error(Nil)
+    // bytes does not start with a "." so there is no fraction.  Call this 0
+    // nanoseconds.
+    _ -> Ok(#(0, bytes))
+  }
+}
+
+fn do_parse_second_fraction_as_nanoseconds(from bytes, acc acc, pow pow, k k) {
+  case bytes {
+    <<byte, remaining_bytes:bytes>> if byte_zero <= byte && byte <= byte_nine -> {
+      // Each digit place to the left in the fractional second is 10x fewer
+      // nanoseconds.
+      let pow = pow / 10
+
+      case int.compare(pow, 1) {
+        order.Lt -> {
+          // We already have the max precision for nanoseconds. Truncate any
+          // remaining digits.
+          do_parse_second_fraction_as_nanoseconds(
+            from: remaining_bytes,
+            acc:,
+            pow:,
+            k: k + 1,
+          )
+        }
+        order.Gt | order.Eq -> {
+          let digit = byte - 0x30
+          do_parse_second_fraction_as_nanoseconds(
+            from: remaining_bytes,
+            acc: acc + digit * pow,
+            pow:,
+            k: k + 1,
+          )
+        }
+      }
+    }
+    _ -> Ok(#(acc, bytes))
+  }
+}
+
+fn parse_offset(from bytes: BitArray) -> Result(#(Int, BitArray), Nil) {
+  case bytes {
+    <<"Z", remaining_bytes:bytes>> | <<"z", remaining_bytes:bytes>> ->
+      Ok(#(0, remaining_bytes))
+    _ -> parse_numeric_offset(bytes)
+  }
+}
+
+fn parse_numeric_offset(from bytes: BitArray) -> Result(#(Int, BitArray), Nil) {
+  use #(sign, bytes) <- result.try(parse_sign(from: bytes))
+  use #(hours, bytes) <- result.try(parse_hours(from: bytes))
+  use bytes <- result.try(accept_byte(from: bytes, value: byte_colon))
+  use #(minutes, bytes) <- result.try(parse_minutes(from: bytes))
+
+  let offset_seconds = offset_to_seconds(sign, hours:, minutes:)
+
+  Ok(#(offset_seconds, bytes))
+}
+
+fn parse_sign(from bytes) {
+  case bytes {
+    <<"+", remaining_bytes:bytes>> -> Ok(#("+", remaining_bytes))
+    <<"-", remaining_bytes:bytes>> -> Ok(#("-", remaining_bytes))
+    _ -> Error(Nil)
+  }
+}
+
+fn offset_to_seconds(sign, hours hours, minutes minutes) {
+  let abs_seconds = hours * seconds_per_hour + minutes * seconds_per_minute
+
+  case sign {
+    "-" -> -abs_seconds
+    _ -> abs_seconds
+  }
+}
+
+/// Parse and return the given number of digits from the given bytes.
+/// 
+fn parse_digits(
+  from bytes: BitArray,
+  count count: Int,
+) -> Result(#(Int, BitArray), Nil) {
+  do_parse_digits(from: bytes, count:, acc: 0, k: 0)
+}
+
+fn do_parse_digits(
+  from bytes: BitArray,
+  count count: Int,
+  acc acc: Int,
+  k k: Int,
+) -> Result(#(Int, BitArray), Nil) {
+  case int.compare(k, count) {
+    order.Lt -> {
+      case bytes {
+        <<byte, remaining_bytes:bytes>>
+          if byte_zero <= byte && byte <= byte_nine
+        ->
+          do_parse_digits(
+            from: remaining_bytes,
+            count:,
+            acc: acc * 10 + { byte - 0x30 },
+            k: k + 1,
+          )
+        _ -> Error(Nil)
+      }
+    }
+    order.Gt | order.Eq -> Ok(#(acc, bytes))
+  }
+}
+
+/// Accept the given value from `bytes` and move past it if found.
+/// 
+fn accept_byte(from bytes: BitArray, value value: Int) -> Result(BitArray, Nil) {
+  case bytes {
+    <<byte, remaining_bytes:bytes>> if byte == value -> Ok(remaining_bytes)
+    _ -> Error(Nil)
+  }
+}
+
+fn accept_date_time_separator(from bytes: BitArray) -> Result(BitArray, Nil) {
+  case bytes {
+    <<byte, remaining_bytes:bytes>>
+      if byte == byte_t_uppercase || byte == byte_t_lowercase
+    -> Ok(remaining_bytes)
+    _ -> Error(Nil)
+  }
+}
+
+fn accept_empty(from bytes: BitArray) -> Result(Nil, Nil) {
+  case bytes {
+    <<>> -> Ok(Nil)
+    _ -> Error(Nil)
+  }
+}
+
+/// Note: The caller of this function must ensure that all inputs are valid.
+/// 
+fn from_date_time(
+  year year: Int,
+  month month: Int,
+  day day: Int,
+  hours hours: Int,
+  minutes minutes: Int,
+  seconds seconds: Int,
+  second_fraction_as_nanoseconds second_fraction_as_nanoseconds: Int,
+  offset_seconds offset_seconds: Int,
+) -> Timestamp {
+  let julian_seconds =
+    julian_seconds_from_parts(year:, month:, day:, hours:, minutes:, seconds:)
+
+  let julian_seconds_since_epoch = julian_seconds - julian_seconds_unix_epoch
+
+  let timestamp =
+    Timestamp(
+      seconds: julian_seconds_since_epoch,
+      nanoseconds: second_fraction_as_nanoseconds,
+    )
+    |> normalise
+
+  let offset = Timestamp(seconds: offset_seconds, nanoseconds: 0)
+  subtract(timestamp, offset)
+}
+
+/// `julian_seconds_from_parts(year, month, day, hours, minutes, seconds)` 
+/// returns the number of Julian 
+/// seconds represented by the given arguments.
+/// 
+/// Note: It is the callers responsibility to ensure the inputs are valid.
+/// 
+/// See https://www.tondering.dk/claus/cal/julperiod.php#formula
+/// 
+fn julian_seconds_from_parts(
+  year year: Int,
+  month month: Int,
+  day day: Int,
+  hours hours: Int,
+  minutes minutes: Int,
+  seconds seconds: Int,
+) {
+  let julian_day_seconds =
+    julian_day_from_ymd(year:, month:, day:) * seconds_per_day
+
+  julian_day_seconds
+  + { hours * seconds_per_hour }
+  + { minutes * seconds_per_minute }
+  + seconds
+}
+
+/// Note: It is the callers responsibility to ensure the inputs are valid.
+/// 
+/// See https://www.tondering.dk/claus/cal/julperiod.php#formula
+/// 
+fn julian_day_from_ymd(year year: Int, month month: Int, day day: Int) -> Int {
+  let adjustment = { 14 - month } / 12
+  let adjusted_year = year + 4800 - adjustment
+  let adjusted_month = month + 12 * adjustment - 3
+
+  day
+  + { { 153 * adjusted_month } + 2 }
+  / 5
+  + 365
+  * adjusted_year
+  + { adjusted_year / 4 }
+  - { adjusted_year / 100 }
+  + { adjusted_year / 400 }
+  - 32_045
+}
+
+fn subtract(left: Timestamp, right: Timestamp) -> Timestamp {
+  add(left, to_duration(negate(right)))
+}
+
+fn negate(timestamp: Timestamp) -> Timestamp {
+  case timestamp {
+    Timestamp(seconds:, nanoseconds: 0) ->
+      Timestamp(seconds: -seconds, nanoseconds: 0)
+    Timestamp(seconds:, nanoseconds:) ->
+      Timestamp(
+        seconds: -{ seconds + 1 },
+        nanoseconds: nanoseconds_per_day - nanoseconds,
+      )
+  }
+}
+
+fn to_duration(timestamp: Timestamp) -> duration.Duration {
+  duration.normalised(
+    seconds: timestamp.seconds,
+    nanoseconds: timestamp.nanoseconds,
+  )
+}
 
 /// Create a timestamp from a number of seconds since 00:00:00 UTC on 1 January
 /// 1970.

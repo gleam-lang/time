@@ -1,9 +1,17 @@
 import gleam/int
+import gleam/io
+import gleam/list
+import gleam/option
 import gleam/order
+import gleam/regexp
+import gleam/result
+import gleam/string
 import gleam/time/duration
+import gleam/time/rfc3339_generator
 import gleam/time/timestamp
 import gleeunit/should
 import qcheck
+import simplifile
 
 pub fn compare_property_0_test() {
   use #(x, y) <- qcheck.given(qcheck.tuple2(
@@ -206,4 +214,317 @@ pub fn to_rfc3339_8_test() {
   timestamp.from_unix_seconds(0)
   |> timestamp.to_rfc3339(-120)
   |> should.equal("1970-01-01T02:00:00-02:00")
+}
+
+// RFC 3339 Parsing
+
+fn timestamp_with_zero_nanoseconds_generator() -> qcheck.Generator(
+  timestamp.Timestamp,
+) {
+  // TODO: This will not generate values of seconds in the full range from
+  // 0000-9999.
+  use seconds <- qcheck.map(qcheck.int_uniform())
+
+  timestamp.from_unix_seconds_and_nanoseconds(seconds:, nanoseconds: 0)
+}
+
+pub fn timestamp_rfc3339_timestamp_roundtrip_property_test() {
+  use seconds <- qcheck.run(
+    config: qcheck.default_config() |> qcheck.with_test_count(10_000),
+    // TODO: This will not generate values of seconds in the full range from
+    // 0000-9999.
+    generator: qcheck.int_uniform(),
+  )
+
+  let assert Ok(ts) =
+    seconds
+    |> timestamp.from_unix_seconds
+    |> timestamp.to_rfc3339(0)
+    |> timestamp.parse_rfc3339
+
+  let #(parsed_seconds, _) = timestamp.to_unix_seconds_and_nanoseconds(ts)
+
+  seconds == parsed_seconds
+}
+
+pub fn timestamp_via_rfc3339_round_tripping_test() {
+  use timestamp <- qcheck.run(
+    config: qcheck.default_config() |> qcheck.with_test_count(10_000),
+    generator: timestamp_with_zero_nanoseconds_generator(),
+  )
+  let assert Ok(parsed_timestamp) =
+    timestamp.to_rfc3339(timestamp, 0) |> timestamp.parse_rfc3339()
+
+  timestamp == parsed_timestamp
+}
+
+// Check against OCaml Ptime reference implementation.
+//
+// These test cases include leap seconds.
+pub fn parse_rfc3339_examples_from_file_test() {
+  let assert Ok(data) = simplifile.read("test/gleam/time/timestamps_parsed.tsv")
+  data
+  |> string.split(on: "\n")
+  |> list.drop(1)
+  |> list.each(fn(line) {
+    case string.split(line, on: "\t") {
+      [ts, seconds, nanos, _, _] -> {
+        let assert Ok(expected_seconds) = int.parse(seconds)
+        let assert Ok(expected_nanos) = int.parse(nanos)
+
+        let assert Ok(parsed_ts) = timestamp.parse_rfc3339(ts)
+        let #(parsed_seconds, parsed_nanos) =
+          timestamp.to_unix_seconds_and_nanoseconds(parsed_ts)
+
+        should.equal(expected_seconds, parsed_seconds)
+        should.equal(expected_nanos, parsed_nanos)
+      }
+      // No more to parse.
+      [""] -> Nil
+      _ -> panic as "bad input line"
+    }
+  })
+}
+
+@external(erlang, "gleam_time_test_ffi", "rfc3339_to_system_time_in_milliseconds")
+@external(javascript, "../../gleam_time_test_ffi.mjs", "rfc3339_to_system_time_in_milliseconds")
+fn rfc3339_to_system_time_in_milliseconds(input: String) -> Result(Int, Nil)
+
+// WARNING: This can give different values on Erlang and JS targets if you pass
+// in a timestamp that has more than 3 fractional digits.  Erlang will give you
+// nanosecond precision, but will round to nearest nanosecond.  JavaScript will
+// give you millisecond precision and trucate to the nearest millisecond.  So,
+// the caller must ensure good values are passed in.
+fn parse_rfc3339_oracle(input: String) -> Result(timestamp.Timestamp, Nil) {
+  use total_milliseconds <- result.map(rfc3339_to_system_time_in_milliseconds(
+    input,
+  ))
+  // Break out the millisecond fraction first so that the conversion to
+  // nanoseconds doesn't overflow for JS in the normalise function.
+  let millisecond_fraction = total_milliseconds % 1000
+  let whole_seconds = { total_milliseconds - millisecond_fraction } / 1000
+  timestamp.from_unix_seconds_and_nanoseconds(
+    seconds: whole_seconds,
+    nanoseconds: millisecond_fraction * 1_000_000,
+  )
+}
+
+pub fn parse_rfc3339_matches_oracle_example_0_test() {
+  parse_rfc3339_should_match_oracle_for("9999-12-31T23:59:59.999Z")
+}
+
+pub fn parse_rfc3339_matches_oracle_example_1_test() {
+  parse_rfc3339_should_match_oracle_for("1970-01-01T00:00:00.111Z")
+}
+
+pub fn parse_rfc3339_matches_oracle_example_2_test() {
+  parse_rfc3339_should_match_oracle_for("1970-01-01T00:00:00.000Z")
+}
+
+pub fn parse_rfc3339_matches_oracle_example_3_test() {
+  parse_rfc3339_should_match_oracle_for("1969-12-31T23:59:59.444Z")
+}
+
+pub fn parse_rfc3339_matches_oracle_example_4_test() {
+  parse_rfc3339_should_match_oracle_for("1969-12-31T23:59:58.666Z")
+}
+
+pub fn parse_rfc3339_matches_oracle_example_5_test() {
+  parse_rfc3339_should_match_oracle_for("0000-01-01T00:00:00Z")
+}
+
+@target(javascript)
+pub fn parse_rfc3339_matches_oracle_example_6_test() {
+  // The oracle gives badarg on Erlang as it is beyond the range of the
+  // 0000-01-01T00:00:00Z limit.
+  parse_rfc3339_should_match_oracle_for("0000-01-01T00:00:00+00:01")
+}
+
+pub fn parse_rfc3339_matches_oracle_example_7_test() {
+  parse_rfc3339_should_match_oracle_for("0000-01-01T00:00:00-00:01")
+}
+
+pub fn parse_rfc3339_matches_oracle_example_8_test() {
+  parse_rfc3339_should_match_oracle_for("9999-12-31T23:59:59.999+00:01")
+}
+
+@target(javascript)
+pub fn parse_rfc3339_matches_oracle_example_9_test() {
+  // This oracle gives badarg on Erlang as it is beyond the range of the
+  // 9999-12-31T23:59:59.999Z limit.
+  parse_rfc3339_should_match_oracle_for("9999-12-31T23:59:59.999-00:01")
+}
+
+@target(erlang)
+pub fn parse_rfc3339_matches_oracle_example_10_test() {
+  // JS returns NaN for any leap seconds, so skip this test in JS.
+  parse_rfc3339_should_match_oracle_for("1970-01-01T23:59:60Z")
+}
+
+fn parse_rfc3339_should_match_oracle_for(date_time) {
+  should.equal(
+    timestamp.parse_rfc3339(date_time),
+    parse_rfc3339_oracle(date_time),
+  )
+}
+
+pub fn parse_rfc3339_matches_oracle_property_test() {
+  use date_time <- qcheck.given(rfc3339_generator.date_time_generator(
+    with_leap_second: False,
+    secfrac_spec: rfc3339_generator.WithMaxLength(3),
+  ))
+
+  let result = timestamp.parse_rfc3339(date_time)
+  let expected = parse_rfc3339_oracle(date_time)
+  case result, expected {
+    Ok(_), Error(Nil) -> {
+      // If Erlang fails and ours succeeds, ensure that it is not one of these
+      // special cases like "0000-01-01T00:00:00+00:01" and greater offsets, or
+      // with 9999-12-31T23:59:59-00:01 and lesser offsets.  Erlang treats them
+      // as bad arguments, but we and JS allow them.
+      let assert Ok(re_0000) =
+        regexp.from_string(
+          "(0000-[0-9]{2}-[0-9]{2}[Tt][0-9]{2}:[0-9]{2}:[0-9]{2})\\+[0-9]{2}:[0-9]{2}",
+        )
+
+      let assert Ok(re_9999) =
+        regexp.from_string(
+          "(9999-[0-9]{2}-[0-9]{2}[Tt][0-9]{2}:[0-9]{2}:[0-9]{2})-[0-9]{2}:[0-9]{2}",
+        )
+
+      case regexp.scan(re_0000, date_time), regexp.scan(re_9999, date_time) {
+        [], [] -> {
+          // There was an unexpected difference
+          False
+        }
+        [regexp.Match(_, submatches: [option.Some(date_time)])], []
+        | [], [regexp.Match(_, submatches: [option.Some(date_time)])]
+        -> {
+          // Reparse with adjusted datetime 
+          let date_time = date_time <> "Z"
+
+          let result = timestamp.parse_rfc3339(date_time) |> io.debug
+          let expected = parse_rfc3339_oracle(date_time) |> io.debug
+
+          result == expected
+        }
+        _, _ -> panic as "impossible"
+      }
+    }
+    _, _ -> {
+      result == expected
+    }
+  }
+}
+
+pub fn parse_rfc3339_succeeds_for_valid_inputs_property_test() {
+  use date_time <- qcheck.given_result(rfc3339_generator.date_time_generator(
+    with_leap_second: True,
+    secfrac_spec: rfc3339_generator.Default,
+  ))
+  timestamp.parse_rfc3339(date_time)
+}
+
+pub fn parse_rfc3339_fails_for_invalid_inputs_test() {
+  // The chance of randomly generating a valid RFC 3339 string is quite low....
+  use string <- qcheck.given_result(qcheck.string())
+  case timestamp.parse_rfc3339(string) {
+    Error(Nil) -> Ok(Nil)
+    Ok(x) -> Error(x)
+  }
+}
+
+pub fn parse_rfc3339_truncates_too_many_fractional_seconds_0_test() {
+  let assert Ok(ts) = timestamp.parse_rfc3339("1970-01-01T00:00:00.1234567899Z")
+
+  let #(_, nanoseconds) = timestamp.to_unix_seconds_and_nanoseconds(ts)
+
+  should.equal(nanoseconds, 123_456_789)
+}
+
+pub fn parse_rfc3339_truncates_too_many_fractional_seconds_1_test() {
+  let assert Ok(ts) = timestamp.parse_rfc3339("1970-01-01T00:00:00.1234567891Z")
+
+  let #(_, nanoseconds) = timestamp.to_unix_seconds_and_nanoseconds(ts)
+
+  should.equal(nanoseconds, 123_456_789)
+}
+
+// Examples from the docs
+
+pub fn parse_rfc3339_docs_example_0_test() {
+  let assert Ok(ts) =
+    timestamp.parse_rfc3339("1970-01-01T00:00:01.12345678999Z")
+  timestamp.to_unix_seconds_and_nanoseconds(ts)
+  |> should.equal(#(1, 123_456_789))
+}
+
+pub fn parse_rfc3339_docs_example_1_test() {
+  let assert Ok(ts) = timestamp.parse_rfc3339("2025-01-10t15:54:30-05:15")
+  timestamp.to_unix_seconds_and_nanoseconds(ts)
+  |> should.equal(#(1_736_543_370, 0))
+}
+
+pub fn parse_rfc3339_docs_example_2_test() {
+  let assert Error(Nil) = timestamp.parse_rfc3339("1995-10-31")
+}
+
+// Checking the normalising.
+
+pub fn normalise_negative_millis_test() {
+  timestamp.from_unix_seconds_and_nanoseconds(1, -1_000_000_000)
+  |> should.equal(timestamp.from_unix_seconds_and_nanoseconds(0, 0))
+
+  timestamp.from_unix_seconds_and_nanoseconds(1, -1_400_000_000)
+  |> should.equal(timestamp.from_unix_seconds_and_nanoseconds(-1, 600_000_000))
+
+  timestamp.from_unix_seconds_and_nanoseconds(1, -2_600_000_000)
+  |> should.equal(timestamp.from_unix_seconds_and_nanoseconds(-2, 400_000_000))
+
+  timestamp.from_unix_seconds_and_nanoseconds(0, -1_000_000_000)
+  |> should.equal(timestamp.from_unix_seconds_and_nanoseconds(-1, 0))
+
+  timestamp.from_unix_seconds_and_nanoseconds(0, -1_400_000_000)
+  |> should.equal(timestamp.from_unix_seconds_and_nanoseconds(-2, 600_000_000))
+
+  timestamp.from_unix_seconds_and_nanoseconds(0, -2_600_000_000)
+  |> should.equal(timestamp.from_unix_seconds_and_nanoseconds(-3, 400_000_000))
+
+  timestamp.from_unix_seconds_and_nanoseconds(-1, -1_000_000_000)
+  |> should.equal(timestamp.from_unix_seconds_and_nanoseconds(-2, 0))
+
+  timestamp.from_unix_seconds_and_nanoseconds(-1, -1_400_000_000)
+  |> should.equal(timestamp.from_unix_seconds_and_nanoseconds(-3, 600_000_000))
+
+  timestamp.from_unix_seconds_and_nanoseconds(-1, -2_600_000_000)
+  |> should.equal(timestamp.from_unix_seconds_and_nanoseconds(-4, 400_000_000))
+}
+
+pub fn normalise_positive_millis_test() {
+  timestamp.from_unix_seconds_and_nanoseconds(1, 1_000_000_000)
+  |> should.equal(timestamp.from_unix_seconds_and_nanoseconds(2, 0))
+
+  timestamp.from_unix_seconds_and_nanoseconds(1, 1_400_000_000)
+  |> should.equal(timestamp.from_unix_seconds_and_nanoseconds(2, 400_000_000))
+
+  timestamp.from_unix_seconds_and_nanoseconds(1, 2_600_000_000)
+  |> should.equal(timestamp.from_unix_seconds_and_nanoseconds(3, 600_000_000))
+
+  timestamp.from_unix_seconds_and_nanoseconds(0, 1_000_000_000)
+  |> should.equal(timestamp.from_unix_seconds_and_nanoseconds(1, 0))
+
+  timestamp.from_unix_seconds_and_nanoseconds(0, 1_400_000_000)
+  |> should.equal(timestamp.from_unix_seconds_and_nanoseconds(1, 400_000_000))
+
+  timestamp.from_unix_seconds_and_nanoseconds(0, 2_600_000_000)
+  |> should.equal(timestamp.from_unix_seconds_and_nanoseconds(2, 600_000_000))
+
+  timestamp.from_unix_seconds_and_nanoseconds(-1, 1_000_000_000)
+  |> should.equal(timestamp.from_unix_seconds_and_nanoseconds(0, 0))
+
+  timestamp.from_unix_seconds_and_nanoseconds(-1, 1_400_000_000)
+  |> should.equal(timestamp.from_unix_seconds_and_nanoseconds(0, 400_000_000))
+
+  timestamp.from_unix_seconds_and_nanoseconds(-1, 2_600_000_000)
+  |> should.equal(timestamp.from_unix_seconds_and_nanoseconds(1, 600_000_000))
 }
