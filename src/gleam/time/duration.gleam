@@ -24,18 +24,6 @@ pub opaque type Duration {
   Duration(seconds: Int, nanoseconds: Int)
 }
 
-/// Create a normalised duration from a number of seconds and nanoseconds.
-/// 
-/// Ensures the duration is represented with `nanoseconds` being positive and
-/// less than 1 second.
-/// 
-pub fn normalised(
-  seconds seconds: Int,
-  nanoseconds nanoseconds: Int,
-) -> Duration {
-  Duration(seconds:, nanoseconds:) |> normalise
-}
-
 /// Ensure the duration is represented with `nanoseconds` being positive and
 /// less than 1 second.
 ///

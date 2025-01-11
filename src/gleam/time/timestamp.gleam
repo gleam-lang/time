@@ -12,8 +12,6 @@ const seconds_per_hour: Int = 3600
 
 const seconds_per_minute: Int = 60
 
-const nanoseconds_per_day: Int = 86_400_000_000_000
-
 const nanoseconds_per_second: Int = 1_000_000_000
 
 /// The `:` character as a byte
@@ -565,15 +563,11 @@ fn from_date_time(
 
   let julian_seconds_since_epoch = julian_seconds - julian_seconds_unix_epoch
 
-  let timestamp =
-    Timestamp(
-      seconds: julian_seconds_since_epoch,
-      nanoseconds: second_fraction_as_nanoseconds,
-    )
-    |> normalise
-
-  let offset = Timestamp(seconds: offset_seconds, nanoseconds: 0)
-  subtract(timestamp, offset)
+  Timestamp(
+    seconds: julian_seconds_since_epoch - offset_seconds,
+    nanoseconds: second_fraction_as_nanoseconds,
+  )
+  |> normalise
 }
 
 /// `julian_seconds_from_parts(year, month, day, hours, minutes, seconds)` 
@@ -619,29 +613,6 @@ fn julian_day_from_ymd(year year: Int, month month: Int, day day: Int) -> Int {
   - { adjusted_year / 100 }
   + { adjusted_year / 400 }
   - 32_045
-}
-
-fn subtract(left: Timestamp, right: Timestamp) -> Timestamp {
-  add(left, to_duration(negate(right)))
-}
-
-fn negate(timestamp: Timestamp) -> Timestamp {
-  case timestamp {
-    Timestamp(seconds:, nanoseconds: 0) ->
-      Timestamp(seconds: -seconds, nanoseconds: 0)
-    Timestamp(seconds:, nanoseconds:) ->
-      Timestamp(
-        seconds: -{ seconds + 1 },
-        nanoseconds: nanoseconds_per_day - nanoseconds,
-      )
-  }
-}
-
-fn to_duration(timestamp: Timestamp) -> duration.Duration {
-  duration.normalised(
-    seconds: timestamp.seconds,
-    nanoseconds: timestamp.nanoseconds,
-  )
 }
 
 /// Create a timestamp from a number of seconds since 00:00:00 UTC on 1 January
