@@ -252,10 +252,7 @@ pub fn timestamp_rfc3339_timestamp_roundtrip_property_test() {
     |> timestamp.to_rfc3339(0)
     |> timestamp.parse_rfc3339
 
-  case timestamp.compare(timestamp, parsed_timestamp) {
-    order.Eq -> True
-    order.Lt | order.Gt -> False
-  }
+  timestamp.compare(timestamp, parsed_timestamp) == order.Eq
 }
 
 pub fn rfc3339_string_timestamp_rfc3339_string_round_tripping_test() {
