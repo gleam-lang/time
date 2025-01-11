@@ -320,58 +320,106 @@ fn parse_rfc3339_oracle(input: String) -> Result(timestamp.Timestamp, Nil) {
 }
 
 pub fn parse_rfc3339_matches_oracle_example_0_test() {
-  parse_rfc3339_should_match_oracle_for("9999-12-31T23:59:59.999Z")
+  let date_time = "9999-12-31T23:59:59.999Z"
+
+  should.equal(
+    timestamp.parse_rfc3339(date_time),
+    parse_rfc3339_oracle(date_time),
+  )
 }
 
 pub fn parse_rfc3339_matches_oracle_example_1_test() {
-  parse_rfc3339_should_match_oracle_for("1970-01-01T00:00:00.111Z")
+  let date_time = "1970-01-01T00:00:00.111Z"
+
+  should.equal(
+    timestamp.parse_rfc3339(date_time),
+    parse_rfc3339_oracle(date_time),
+  )
 }
 
 pub fn parse_rfc3339_matches_oracle_example_2_test() {
-  parse_rfc3339_should_match_oracle_for("1970-01-01T00:00:00.000Z")
+  let date_time = "1970-01-01T00:00:00.000Z"
+
+  should.equal(
+    timestamp.parse_rfc3339(date_time),
+    parse_rfc3339_oracle(date_time),
+  )
 }
 
 pub fn parse_rfc3339_matches_oracle_example_3_test() {
-  parse_rfc3339_should_match_oracle_for("1969-12-31T23:59:59.444Z")
+  let date_time = "1969-12-31T23:59:59.444Z"
+
+  should.equal(
+    timestamp.parse_rfc3339(date_time),
+    parse_rfc3339_oracle(date_time),
+  )
 }
 
 pub fn parse_rfc3339_matches_oracle_example_4_test() {
-  parse_rfc3339_should_match_oracle_for("1969-12-31T23:59:58.666Z")
+  let date_time = "1969-12-31T23:59:58.666Z"
+
+  should.equal(
+    timestamp.parse_rfc3339(date_time),
+    parse_rfc3339_oracle(date_time),
+  )
 }
 
 pub fn parse_rfc3339_matches_oracle_example_5_test() {
-  parse_rfc3339_should_match_oracle_for("0000-01-01T00:00:00Z")
+  let date_time = "0000-01-01T00:00:00Z"
+
+  should.equal(
+    timestamp.parse_rfc3339(date_time),
+    parse_rfc3339_oracle(date_time),
+  )
 }
 
+// The oracle gives badarg on Erlang as it is beyond the range of the
+// 0000-01-01T00:00:00Z limit.
 @target(javascript)
 pub fn parse_rfc3339_matches_oracle_example_6_test() {
-  // The oracle gives badarg on Erlang as it is beyond the range of the
-  // 0000-01-01T00:00:00Z limit.
-  parse_rfc3339_should_match_oracle_for("0000-01-01T00:00:00+00:01")
+  let date_time = "0000-01-01T00:00:00+00:01"
+
+  should.equal(
+    timestamp.parse_rfc3339(date_time),
+    parse_rfc3339_oracle(date_time),
+  )
 }
 
 pub fn parse_rfc3339_matches_oracle_example_7_test() {
-  parse_rfc3339_should_match_oracle_for("0000-01-01T00:00:00-00:01")
+  let date_time = "0000-01-01T00:00:00-00:01"
+
+  should.equal(
+    timestamp.parse_rfc3339(date_time),
+    parse_rfc3339_oracle(date_time),
+  )
 }
 
 pub fn parse_rfc3339_matches_oracle_example_8_test() {
-  parse_rfc3339_should_match_oracle_for("9999-12-31T23:59:59.999+00:01")
+  let date_time = "9999-12-31T23:59:59.999+00:01"
+
+  should.equal(
+    timestamp.parse_rfc3339(date_time),
+    parse_rfc3339_oracle(date_time),
+  )
 }
 
+// This oracle gives badarg on Erlang as it is beyond the range of the
+// 9999-12-31T23:59:59.999Z limit.
 @target(javascript)
 pub fn parse_rfc3339_matches_oracle_example_9_test() {
-  // This oracle gives badarg on Erlang as it is beyond the range of the
-  // 9999-12-31T23:59:59.999Z limit.
-  parse_rfc3339_should_match_oracle_for("9999-12-31T23:59:59.999-00:01")
+  let date_time = "9999-12-31T23:59:59.999-00:01"
+
+  should.equal(
+    timestamp.parse_rfc3339(date_time),
+    parse_rfc3339_oracle(date_time),
+  )
 }
 
+// JS returns NaN for any leap seconds, so skip this test in JS.
 @target(erlang)
 pub fn parse_rfc3339_matches_oracle_example_10_test() {
-  // JS returns NaN for any leap seconds, so skip this test in JS.
-  parse_rfc3339_should_match_oracle_for("1970-01-01T23:59:60Z")
-}
+  let date_time = "1970-01-01T23:59:60Z"
 
-fn parse_rfc3339_should_match_oracle_for(date_time) {
   should.equal(
     timestamp.parse_rfc3339(date_time),
     parse_rfc3339_oracle(date_time),
