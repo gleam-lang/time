@@ -508,22 +508,16 @@ fn do_parse_digits(
   acc acc: Int,
   k k: Int,
 ) -> Result(#(Int, BitArray), Nil) {
-  case int.compare(k, count) {
-    order.Lt -> {
-      case bytes {
-        <<byte, remaining_bytes:bytes>>
-          if byte_zero <= byte && byte <= byte_nine
-        ->
-          do_parse_digits(
-            from: remaining_bytes,
-            count:,
-            acc: acc * 10 + { byte - 0x30 },
-            k: k + 1,
-          )
-        _ -> Error(Nil)
-      }
-    }
-    order.Gt | order.Eq -> Ok(#(acc, bytes))
+  case bytes {
+    _ if k >= count -> Ok(#(acc, bytes))
+    <<byte, remaining_bytes:bytes>> if byte_zero <= byte && byte <= byte_nine ->
+      do_parse_digits(
+        from: remaining_bytes,
+        count:,
+        acc: acc * 10 + { byte - 0x30 },
+        k: k + 1,
+      )
+    _ -> Error(Nil)
   }
 }
 
