@@ -1,5 +1,4 @@
 import gleam/int
-import gleam/io
 import gleam/list
 import gleam/option
 import gleam/order
@@ -218,39 +217,29 @@ pub fn to_rfc3339_8_test() {
 
 // RFC 3339 Parsing
 
-fn timestamp_with_zero_nanoseconds_generator() -> qcheck.Generator(
-  timestamp.Timestamp,
-) {
-  // TODO: This will not generate values of seconds in the full range from
-  // 0000-9999.
-  use seconds <- qcheck.map(qcheck.int_uniform())
-
-  timestamp.from_unix_seconds_and_nanoseconds(seconds:, nanoseconds: 0)
-}
-
 pub fn timestamp_rfc3339_timestamp_roundtrip_property_test() {
-  use seconds <- qcheck.run(
+  use timestamp <- qcheck.run(
     config: qcheck.default_config() |> qcheck.with_test_count(10_000),
-    // TODO: This will not generate values of seconds in the full range from
-    // 0000-9999.
-    generator: qcheck.int_uniform(),
+    generator: rfc3339_generator.timestamp_with_zero_nanoseconds_generator(),
   )
 
-  let assert Ok(ts) =
-    seconds
-    |> timestamp.from_unix_seconds
+  let assert Ok(parsed_timestamp) =
+    timestamp
     |> timestamp.to_rfc3339(0)
     |> timestamp.parse_rfc3339
 
-  let #(parsed_seconds, _) = timestamp.to_unix_seconds_and_nanoseconds(ts)
-
-  seconds == parsed_seconds
+  case timestamp.compare(timestamp, parsed_timestamp) {
+    order.Eq -> True
+    order.Lt | order.Gt -> False
+  }
 }
 
-pub fn timestamp_via_rfc3339_round_tripping_test() {
+pub fn rfc3339_string_timestamp_rfc3339_string_round_tripping_test() {
   use timestamp <- qcheck.run(
     config: qcheck.default_config() |> qcheck.with_test_count(10_000),
-    generator: timestamp_with_zero_nanoseconds_generator(),
+    // TODO: switch to generator with nanoseconds once to_rfc3339 handles
+    // fractional seconds.
+    generator: rfc3339_generator.timestamp_with_zero_nanoseconds_generator(),
   )
   let assert Ok(parsed_timestamp) =
     timestamp.to_rfc3339(timestamp, 0) |> timestamp.parse_rfc3339()
@@ -403,9 +392,8 @@ pub fn parse_rfc3339_matches_oracle_property_test() {
           // Reparse with adjusted datetime 
           let date_time = date_time <> "Z"
 
-          let result = timestamp.parse_rfc3339(date_time) |> io.debug
-          let expected = parse_rfc3339_oracle(date_time) |> io.debug
-
+          let result = timestamp.parse_rfc3339(date_time)
+          let expected = parse_rfc3339_oracle(date_time)
           result == expected
         }
         _, _ -> panic as "impossible"
