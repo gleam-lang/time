@@ -1,8 +1,6 @@
 import gleam/int
 import gleam/list
-import gleam/option
 import gleam/order
-import gleam/regexp
 import gleam/result
 import gleam/string
 import gleam/time/duration
@@ -428,56 +426,22 @@ pub fn parse_rfc3339_matches_oracle_example_10_test() {
 
 pub fn parse_rfc3339_matches_oracle_property_test() {
   use date_time <- qcheck.given(rfc3339_generator.date_time_generator(
+    // JavaScript oracle cannot handle leap-seconds.
     with_leap_second: False,
+    // JavaScript oracle has max precision of milliseconds.
     secfrac_spec: rfc3339_generator.WithMaxLength(3),
+    // Some valid timestamps cannot be parsed by the Erlang oracle.
+    avoid_erlang_errors: True,
   ))
 
-  let result = timestamp.parse_rfc3339(date_time)
-  let expected = parse_rfc3339_oracle(date_time)
-  case result, expected {
-    Ok(_), Error(Nil) -> {
-      // If Erlang fails and ours succeeds, ensure that it is not one of these
-      // special cases like "0000-01-01T00:00:00+00:01" and greater offsets, or
-      // with 9999-12-31T23:59:59-00:01 and lesser offsets.  Erlang treats them
-      // as bad arguments, but we and JS allow them.
-      let assert Ok(re_0000) =
-        regexp.from_string(
-          "(0000-[0-9]{2}-[0-9]{2}[Tt][0-9]{2}:[0-9]{2}:[0-9]{2})\\+[0-9]{2}:[0-9]{2}",
-        )
-
-      let assert Ok(re_9999) =
-        regexp.from_string(
-          "(9999-[0-9]{2}-[0-9]{2}[Tt][0-9]{2}:[0-9]{2}:[0-9]{2})-[0-9]{2}:[0-9]{2}",
-        )
-
-      case regexp.scan(re_0000, date_time), regexp.scan(re_9999, date_time) {
-        [], [] -> {
-          // There was an unexpected difference
-          False
-        }
-        [regexp.Match(_, submatches: [option.Some(date_time)])], []
-        | [], [regexp.Match(_, submatches: [option.Some(date_time)])]
-        -> {
-          // Reparse with adjusted datetime 
-          let date_time = date_time <> "Z"
-
-          let result = timestamp.parse_rfc3339(date_time)
-          let expected = parse_rfc3339_oracle(date_time)
-          result == expected
-        }
-        _, _ -> panic as "impossible"
-      }
-    }
-    _, _ -> {
-      result == expected
-    }
-  }
+  timestamp.parse_rfc3339(date_time) == parse_rfc3339_oracle(date_time)
 }
 
 pub fn parse_rfc3339_succeeds_for_valid_inputs_property_test() {
   use date_time <- qcheck.given_result(rfc3339_generator.date_time_generator(
     with_leap_second: True,
     secfrac_spec: rfc3339_generator.Default,
+    avoid_erlang_errors: False,
   ))
   timestamp.parse_rfc3339(date_time)
 }

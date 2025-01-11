@@ -1,5 +1,6 @@
 import gleam/int
 import gleam/option
+import gleam/regexp
 import gleam/string
 import qcheck
 
@@ -56,13 +57,48 @@ fn seconds_for_timestamp_generator() {
 pub fn date_time_generator(
   with_leap_second with_leap_second: Bool,
   secfrac_spec secfrac_spec: SecfracSpec,
+  avoid_erlang_errors avoid_erlang_errors: Bool,
 ) -> qcheck.Generator(String) {
   use full_date, t, full_time <- qcheck.map3(
     g1: full_date_generator(),
     g2: t_generator(),
     g3: full_time_generator(with_leap_second, secfrac_spec),
   )
-  full_date <> t <> full_time
+  let date_time = full_date <> t <> full_time
+
+  // There are valid timestamps that the Erlang oracle will fail to parse, but
+  // that timestamp.parse_rfc3339 and the JS oracle correctly parse.  E.g.,
+  // "0000-01-01T00:00:00+00:01" and greater offsets, or with
+  // 9999-12-31T23:59:59-00:01 and lesser offsets.  For some of the property
+  // tests, we need to account for this.
+  //
+  // This is a very rare occurence, but we can check it heree to avoid flaky
+  // failures.
+  case avoid_erlang_errors {
+    True -> {
+      let assert Ok(re_0000) =
+        regexp.from_string(
+          "(0000-[0-9]{2}-[0-9]{2}[Tt][0-9]{2}:[0-9]{2}:[0-9]{2})\\+[0-9]{2}:[0-9]{2}",
+        )
+
+      let assert Ok(re_9999) =
+        regexp.from_string(
+          "(9999-[0-9]{2}-[0-9]{2}[Tt][0-9]{2}:[0-9]{2}:[0-9]{2})-[0-9]{2}:[0-9]{2}",
+        )
+
+      case regexp.scan(re_0000, date_time), regexp.scan(re_9999, date_time) {
+        [regexp.Match(_, submatches: [option.Some(date_time_no_offset)])], []
+        | [], [regexp.Match(_, submatches: [option.Some(date_time_no_offset)])]
+        -> {
+          // It is one of the bad Erlang cases, so replace the offset with "Z".
+          date_time_no_offset <> "Z"
+        }
+
+        _, _ -> date_time
+      }
+    }
+    False -> date_time
+  }
 }
 
 pub fn date_time_no_secfrac_generator(
