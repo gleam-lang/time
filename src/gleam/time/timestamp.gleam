@@ -273,11 +273,11 @@ fn to_civil(minutes: Int) -> #(Int, Int, Int) {
 /// let assert Ok(ts) = parse_rfc3339("1970-01-01T00:00:01.12345678999Z")
 /// to_unix_seconds_and_nanoseconds(ts)
 /// // -> #(1, 123_456_789)
+/// ```
 /// 
-/// let assert Ok(ts) = parse_rfc3339("2025-01-10t15:54:30-05:15")
-/// to_unix_seconds_and_nanoseconds(ts)
-/// // -> #(1_736_543_370, 0)
+/// Parsing an invalid timestamp returns an error.
 /// 
+/// ```gleam
 /// let assert Error(Nil) = timestamp.parse_rfc3339("1995-10-31")
 /// ```
 ///
