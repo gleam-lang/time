@@ -101,6 +101,10 @@ pub fn date_time_generator(
   }
 }
 
+/// Generate date-time strings with no fractional second component.  
+/// 
+/// This is a temporary solution until the to_rfc3339 function handles second 
+/// fractions.
 pub fn date_time_no_secfrac_generator(
   with_leap_second with_leap_second: Bool,
 ) -> qcheck.Generator(String) {
