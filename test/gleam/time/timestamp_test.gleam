@@ -215,6 +215,30 @@ pub fn to_rfc3339_8_test() {
   |> should.equal("1970-01-01T02:00:00-02:00")
 }
 
+pub fn to_rfc3339_9_test() {
+  timestamp.from_unix_seconds(-62_167_219_200)
+  |> timestamp.to_rfc3339(0)
+  |> should.equal("0000-01-01T00:00:00Z")
+}
+
+pub fn to_rfc3339_10_test() {
+  timestamp.from_unix_seconds(-62_135_596_800)
+  |> timestamp.to_rfc3339(0)
+  |> should.equal("0001-01-01T00:00:00Z")
+}
+
+pub fn to_rfc3339_11_test() {
+  timestamp.from_unix_seconds(-61_851_600_000)
+  |> timestamp.to_rfc3339(0)
+  |> should.equal("0010-01-01T00:00:00Z")
+}
+
+pub fn to_rfc3339_12_test() {
+  timestamp.from_unix_seconds(-59_011_459_200)
+  |> timestamp.to_rfc3339(0)
+  |> should.equal("0100-01-01T00:00:00Z")
+}
+
 // RFC 3339 Parsing
 
 pub fn timestamp_rfc3339_timestamp_roundtrip_property_test() {
