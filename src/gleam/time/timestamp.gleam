@@ -355,13 +355,15 @@ fn parse_day(
 ) -> Result(#(Int, BitArray), Nil) {
   use #(day, bytes) <- result.try(parse_digits(from: bytes, count: 2))
 
-  let is_leap_year = is_leap_year(year)
-
   use max_day <- result.try(case month {
     1 | 3 | 5 | 7 | 8 | 10 | 12 -> Ok(31)
     4 | 6 | 9 | 11 -> Ok(30)
-    2 if is_leap_year -> Ok(29)
-    2 -> Ok(28)
+    2 -> {
+      case is_leap_year(year) {
+        True -> Ok(29)
+        False -> Ok(28)
+      }
+    }
     _ -> Error(Nil)
   })
 
