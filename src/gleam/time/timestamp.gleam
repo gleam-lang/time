@@ -424,7 +424,12 @@ fn parse_second_fraction_as_nanoseconds(from bytes: BitArray) {
   }
 }
 
-fn do_parse_second_fraction_as_nanoseconds(from bytes, acc acc, pow pow, k k) {
+fn do_parse_second_fraction_as_nanoseconds(
+  from bytes: BitArray,
+  acc acc: Int,
+  pow pow: Int,
+  k k: Int,
+) -> Result(#(Int, BitArray), a) {
   case bytes {
     <<byte, remaining_bytes:bytes>> if byte_zero <= byte && byte <= byte_nine -> {
       // Each digit place to the left in the fractional second is 10x fewer
