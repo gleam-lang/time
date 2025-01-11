@@ -411,8 +411,7 @@ fn parse_second_fraction_as_nanoseconds(from bytes: BitArray) {
       do_parse_second_fraction_as_nanoseconds(
         from: <<byte, remaining_bytes:bits>>,
         acc: 0,
-        pow: nanoseconds_per_second,
-        k: 0,
+        power: nanoseconds_per_second,
       )
     }
     // bytes starts with a ".", which should introduce a fraction, but it does
@@ -427,36 +426,32 @@ fn parse_second_fraction_as_nanoseconds(from bytes: BitArray) {
 fn do_parse_second_fraction_as_nanoseconds(
   from bytes: BitArray,
   acc acc: Int,
-  pow pow: Int,
-  k k: Int,
+  power power: Int,
 ) -> Result(#(Int, BitArray), a) {
-  case bytes {
-    <<byte, remaining_bytes:bytes>> if byte_zero <= byte && byte <= byte_nine -> {
-      // Each digit place to the left in the fractional second is 10x fewer
-      // nanoseconds.
-      let pow = pow / 10
+  // Each digit place to the left in the fractional second is 10x fewer
+  // nanoseconds.
+  let power = power / 10
 
-      case int.compare(pow, 1) {
-        order.Lt -> {
-          // We already have the max precision for nanoseconds. Truncate any
-          // remaining digits.
-          do_parse_second_fraction_as_nanoseconds(
-            from: remaining_bytes,
-            acc:,
-            pow:,
-            k: k + 1,
-          )
-        }
-        order.Gt | order.Eq -> {
-          let digit = byte - 0x30
-          do_parse_second_fraction_as_nanoseconds(
-            from: remaining_bytes,
-            acc: acc + digit * pow,
-            pow:,
-            k: k + 1,
-          )
-        }
-      }
+  case bytes {
+    <<byte, remaining_bytes:bytes>>
+      if byte_zero <= byte && byte <= byte_nine && power < 1
+    -> {
+      // We already have the max precision for nanoseconds. Truncate any
+      // remaining digits.
+      do_parse_second_fraction_as_nanoseconds(
+        from: remaining_bytes,
+        acc:,
+        power:,
+      )
+    }
+    <<byte, remaining_bytes:bytes>> if byte_zero <= byte && byte <= byte_nine -> {
+      // We have not yet reached the precision limit. Parse the next digit.
+      let digit = byte - 0x30
+      do_parse_second_fraction_as_nanoseconds(
+        from: remaining_bytes,
+        acc: acc + digit * power,
+        power:,
+      )
     }
     _ -> Ok(#(acc, bytes))
   }
