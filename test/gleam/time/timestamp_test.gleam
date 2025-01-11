@@ -455,6 +455,12 @@ pub fn parse_rfc3339_fails_for_invalid_inputs_test() {
   }
 }
 
+pub fn parse_rfc3339_bad_leapyear_test() {
+  // 29 days in February in a non-leap year is an error.
+  timestamp.parse_rfc3339("2023-02-29T00:00:00Z")
+  |> should.equal(Error(Nil))
+}
+
 pub fn parse_rfc3339_truncates_too_many_fractional_seconds_0_test() {
   let assert Ok(ts) = timestamp.parse_rfc3339("1970-01-01T00:00:00.1234567899Z")
 
