@@ -429,7 +429,7 @@ pub fn parse_rfc3339_matches_oracle_property_test() {
     // JavaScript oracle cannot handle leap-seconds.
     with_leap_second: False,
     // JavaScript oracle has max precision of milliseconds.
-    secfrac_spec: rfc3339_generator.WithMaxLength(3),
+    second_fraction_spec: rfc3339_generator.WithMaxLength(3),
     // Some valid timestamps cannot be parsed by the Erlang oracle.
     avoid_erlang_errors: True,
   ))
@@ -440,7 +440,7 @@ pub fn parse_rfc3339_matches_oracle_property_test() {
 pub fn parse_rfc3339_succeeds_for_valid_inputs_property_test() {
   use date_time <- qcheck.given_result(rfc3339_generator.date_time_generator(
     with_leap_second: True,
-    secfrac_spec: rfc3339_generator.Default,
+    second_fraction_spec: rfc3339_generator.Default,
     avoid_erlang_errors: False,
   ))
   timestamp.parse_rfc3339(date_time)

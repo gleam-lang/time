@@ -56,13 +56,13 @@ fn seconds_for_timestamp_generator() {
 
 pub fn date_time_generator(
   with_leap_second with_leap_second: Bool,
-  secfrac_spec secfrac_spec: SecfracSpec,
+  second_fraction_spec second_fraction_spec: SecondFractionSpec,
   avoid_erlang_errors avoid_erlang_errors: Bool,
 ) -> qcheck.Generator(String) {
   use full_date, t, full_time <- qcheck.map3(
     g1: full_date_generator(),
     g2: t_generator(),
-    g3: full_time_generator(with_leap_second, secfrac_spec),
+    g3: full_time_generator(with_leap_second, second_fraction_spec),
   )
   let date_time = full_date <> t <> full_time
 
@@ -105,13 +105,13 @@ pub fn date_time_generator(
 /// 
 /// This is a temporary solution until the to_rfc3339 function handles second 
 /// fractions.
-pub fn date_time_no_secfrac_generator(
+pub fn date_time_no_second_fraction_generator(
   with_leap_second with_leap_second: Bool,
 ) -> qcheck.Generator(String) {
   use full_date, t, full_time <- qcheck.map3(
     g1: full_date_generator(),
     g2: t_generator(),
-    g3: full_time_no_secfrac_generator(with_leap_second),
+    g3: full_time_no_second_fraction_generator(with_leap_second),
   )
   full_date <> t <> full_time
 }
@@ -168,20 +168,20 @@ fn t_generator() {
 
 fn full_time_generator(
   with_leap_second with_leap_second: Bool,
-  secfrac_spec secfrac_spec: SecfracSpec,
+  second_fraction_spec second_fraction_spec: SecondFractionSpec,
 ) -> qcheck.Generator(String) {
   use partial_time, time_offset <- qcheck.map2(
-    g1: partial_time_generator(with_leap_second, secfrac_spec),
+    g1: partial_time_generator(with_leap_second, second_fraction_spec),
     g2: time_offset_generator(),
   )
   partial_time <> time_offset
 }
 
-fn full_time_no_secfrac_generator(
+fn full_time_no_second_fraction_generator(
   with_leap_second with_leap_second: Bool,
 ) -> qcheck.Generator(String) {
   use partial_time, time_offset <- qcheck.map2(
-    g1: partial_time_no_secfrac_generator(with_leap_second),
+    g1: partial_time_no_second_fraction_generator(with_leap_second),
     g2: time_offset_generator(),
   )
   partial_time <> time_offset
@@ -189,27 +189,31 @@ fn full_time_no_secfrac_generator(
 
 fn partial_time_generator(
   with_leap_second with_leap_second: Bool,
-  secfrac_spec secfrac_spec: SecfracSpec,
+  second_fraction_spec second_fraction_spec: SecondFractionSpec,
 ) -> qcheck.Generator(String) {
   qcheck.return({
     use time_hour <- qcheck.parameter
     use time_minute <- qcheck.parameter
     use time_second <- qcheck.parameter
-    use optional_time_secfrac <- qcheck.parameter
+    use optional_time_second_fraction <- qcheck.parameter
     time_hour
     <> ":"
     <> time_minute
     <> ":"
     <> time_second
-    <> unwrap_optional_string(optional_time_secfrac)
+    <> unwrap_optional_string(optional_time_second_fraction)
   })
   |> qcheck.apply(time_hour_generator())
   |> qcheck.apply(time_minute_generator())
   |> qcheck.apply(time_second_generator(with_leap_second))
-  |> qcheck.apply(qcheck.option(time_secfrac_generator(secfrac_spec)))
+  |> qcheck.apply(
+    qcheck.option(time_second_fraction_generator(second_fraction_spec)),
+  )
 }
 
-fn partial_time_no_secfrac_generator(with_leap_second with_leap_second: Bool) {
+fn partial_time_no_second_fraction_generator(
+  with_leap_second with_leap_second: Bool,
+) {
   qcheck.return({
     use time_hour <- qcheck.parameter
     use time_minute <- qcheck.parameter
@@ -248,13 +252,15 @@ fn zero_padded_digits_generator(
   int.to_string(n) |> string.pad_start(to: length, with: "0")
 }
 
-pub type SecfracSpec {
+pub type SecondFractionSpec {
   Default
   WithMaxLength(Int)
 }
 
-fn time_secfrac_generator(secfrac_spec: SecfracSpec) -> qcheck.Generator(String) {
-  let generator = case secfrac_spec {
+fn time_second_fraction_generator(
+  second_fraction_spec: SecondFractionSpec,
+) -> qcheck.Generator(String) {
+  let generator = case second_fraction_spec {
     Default -> one_or_more_digits_generator()
     WithMaxLength(max_count) -> digits_generator(min_count: 1, max_count:)
   }
