@@ -119,11 +119,11 @@ pub fn date_time_no_second_fraction_generator(
 fn full_date_generator() -> qcheck.Generator(String) {
   use date_fullyear <- qcheck.bind(date_fullyear_generator())
   use date_month <- qcheck.bind(date_month_generator())
-  use date_mday <- qcheck.map(date_mday_generator(
+  use date_month_day <- qcheck.map(date_month_day_generator(
     year: date_fullyear,
     month: date_month,
   ))
-  date_fullyear <> "-" <> date_month <> "-" <> date_mday
+  date_fullyear <> "-" <> date_month <> "-" <> date_month_day
 }
 
 fn date_fullyear_generator() -> qcheck.Generator(String) {
@@ -134,7 +134,7 @@ fn date_month_generator() -> qcheck.Generator(String) {
   zero_padded_digits_generator(length: 2, from: 1, to: 12)
 }
 
-fn date_mday_generator(
+fn date_month_day_generator(
   year year: String,
   month month: String,
 ) -> qcheck.Generator(String) {
@@ -148,7 +148,7 @@ fn date_mday_generator(
     "02" if is_leap_year ->
       zero_padded_digits_generator(length: 2, from: 1, to: 29)
     "02" -> zero_padded_digits_generator(length: 2, from: 1, to: 28)
-    _ -> panic as { "date_mday_generator: bad month " <> month }
+    _ -> panic as { "date_month_day_generator: bad month " <> month }
   }
 }
 
