@@ -239,6 +239,40 @@ pub fn to_rfc3339_12_test() {
 
 // RFC 3339 Parsing
 
+pub fn parse_rfc3339_0_test() {
+  let assert Ok(timestamp) = timestamp.parse_rfc3339("1970-01-01T00:00:00.6Z")
+
+  timestamp
+  |> timestamp.to_unix_seconds_and_nanoseconds
+  |> should.equal(#(0, 600_000_000))
+}
+
+pub fn parse_rfc3339_1_test() {
+  let assert Ok(timestamp) = timestamp.parse_rfc3339("1969-12-31T23:59:59.6Z")
+
+  timestamp
+  |> timestamp.to_unix_seconds_and_nanoseconds
+  |> should.equal(#(-1, 600_000_000))
+}
+
+pub fn parse_rfc3339_2_test() {
+  let assert Ok(timestamp) =
+    timestamp.parse_rfc3339("1970-01-01t00:00:00.55+00:01")
+
+  timestamp
+  |> timestamp.to_unix_seconds_and_nanoseconds
+  |> should.equal(#(-60, 550_000_000))
+}
+
+pub fn parse_rfc3339_3_test() {
+  let assert Ok(timestamp) =
+    timestamp.parse_rfc3339("1970-01-01T00:00:00.55-00:01")
+
+  timestamp
+  |> timestamp.to_unix_seconds_and_nanoseconds
+  |> should.equal(#(60, 550_000_000))
+}
+
 pub fn timestamp_rfc3339_timestamp_roundtrip_property_test() {
   use timestamp <- qcheck.given(
     rfc3339_generator.timestamp_with_zero_nanoseconds_generator(),
