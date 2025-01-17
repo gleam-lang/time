@@ -240,9 +240,8 @@ pub fn to_rfc3339_12_test() {
 // RFC 3339 Parsing
 
 pub fn timestamp_rfc3339_timestamp_roundtrip_property_test() {
-  use timestamp <- qcheck.run(
-    config: qcheck.default_config() |> qcheck.with_test_count(10_000),
-    generator: rfc3339_generator.timestamp_with_zero_nanoseconds_generator(),
+  use timestamp <- qcheck.given(
+    rfc3339_generator.timestamp_with_zero_nanoseconds_generator(),
   )
 
   let assert Ok(parsed_timestamp) =
@@ -254,11 +253,10 @@ pub fn timestamp_rfc3339_timestamp_roundtrip_property_test() {
 }
 
 pub fn rfc3339_string_timestamp_rfc3339_string_round_tripping_test() {
-  use timestamp <- qcheck.run(
-    config: qcheck.default_config() |> qcheck.with_test_count(10_000),
+  use timestamp <- qcheck.given(
     // TODO: switch to generator with nanoseconds once to_rfc3339 handles
     // fractional seconds.
-    generator: rfc3339_generator.timestamp_with_zero_nanoseconds_generator(),
+    rfc3339_generator.timestamp_with_zero_nanoseconds_generator(),
   )
   let assert Ok(parsed_timestamp) =
     timestamp.to_rfc3339(timestamp, 0) |> timestamp.parse_rfc3339()
