@@ -524,6 +524,58 @@ pub fn parse_rfc3339_docs_example_1_test() {
   |> should.equal(#(1_736_543_370, 0))
 }
 
+// Bad timestamps fail to parse
+
+pub fn parse_rfc3339_returns_error_for_bad_timestamp_0_test() {
+  timestamp.parse_rfc3339("12349-01-01T00:00:00Z")
+  |> should.be_error
+}
+
+pub fn parse_rfc3339_returns_error_for_bad_timestamp_1_test() {
+  timestamp.parse_rfc3339("1234-019-01T00:00:00Z")
+  |> should.be_error
+}
+
+pub fn parse_rfc3339_returns_error_for_bad_timestamp_2_test() {
+  timestamp.parse_rfc3339("1234-01-019T00:00:00Z")
+  |> should.be_error
+}
+
+pub fn parse_rfc3339_returns_error_for_bad_timestamp_3_test() {
+  timestamp.parse_rfc3339("1234-01-01 00:00:00Z")
+  |> should.be_error
+}
+
+pub fn parse_rfc3339_returns_error_for_bad_timestamp_4_test() {
+  timestamp.parse_rfc3339("1234-01-01T009:00:00Z")
+  |> should.be_error
+}
+
+pub fn parse_rfc3339_returns_error_for_bad_timestamp_5_test() {
+  timestamp.parse_rfc3339("1234-01-01T00:009:00Z")
+  |> should.be_error
+}
+
+pub fn parse_rfc3339_returns_error_for_bad_timestamp_6_test() {
+  timestamp.parse_rfc3339("1234-01-01T00:00:009Z")
+  |> should.be_error
+}
+
+pub fn parse_rfc3339_returns_error_for_bad_timestamp_7_test() {
+  timestamp.parse_rfc3339("1234-01-01T00:00:00*00:00")
+  |> should.be_error
+}
+
+pub fn parse_rfc3339_returns_error_for_bad_timestamp_8_test() {
+  timestamp.parse_rfc3339("1234-01-01T00:00:00+009:00")
+  |> should.be_error
+}
+
+pub fn parse_rfc3339_returns_error_for_bad_timestamp_9_test() {
+  timestamp.parse_rfc3339("1234-01-01T00:00:00+00:009")
+  |> should.be_error
+}
+
 pub fn parse_rfc3339_docs_example_2_test() {
   let assert Error(Nil) = timestamp.parse_rfc3339("1995-10-31")
 }
