@@ -327,10 +327,8 @@ pub fn parse_rfc3339_3_test() {
   |> should.equal(#(60, 550_000_000))
 }
 
-pub fn timestamp_rfc3339_timestamp_roundtrip_property_test() {
-  use timestamp <- qcheck.given(
-    rfc3339_generator.timestamp_with_zero_nanoseconds_generator(),
-  )
+pub fn timestamp_rfc3339_string_timestamp_roundtrip_property_test() {
+  use timestamp <- qcheck.given(rfc3339_generator.timestamp_generator())
 
   let assert Ok(parsed_timestamp) =
     timestamp
@@ -338,18 +336,6 @@ pub fn timestamp_rfc3339_timestamp_roundtrip_property_test() {
     |> timestamp.parse_rfc3339
 
   timestamp.compare(timestamp, parsed_timestamp) == order.Eq
-}
-
-pub fn rfc3339_string_timestamp_rfc3339_string_round_tripping_test() {
-  use timestamp <- qcheck.given(
-    // TODO: switch to generator with nanoseconds once to_rfc3339 handles
-    // fractional seconds.
-    rfc3339_generator.timestamp_with_zero_nanoseconds_generator(),
-  )
-  let assert Ok(parsed_timestamp) =
-    timestamp.to_rfc3339(timestamp, 0) |> timestamp.parse_rfc3339()
-
-  timestamp == parsed_timestamp
 }
 
 // Check against OCaml Ptime reference implementation.

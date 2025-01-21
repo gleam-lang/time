@@ -2,56 +2,48 @@ import gleam/int
 import gleam/option
 import gleam/regexp
 import gleam/string
+import gleam/time/timestamp
 import qcheck
 
-import gleam/time/timestamp
-
-pub fn timestamp_with_zero_nanoseconds_generator() -> qcheck.Generator(
-  timestamp.Timestamp,
-) {
-  use seconds <- qcheck.map(seconds_for_timestamp_generator())
-
-  timestamp.from_unix_seconds_and_nanoseconds(seconds:, nanoseconds: 0)
-}
-
-// Don't use this one of you also want nanoseconds. Those nanoseconds could push
-// it out of range, and need to be specifically accounted for.
-fn seconds_for_timestamp_generator() {
+/// Generate timestamps representing instants in the range `0000-01-01T00:00:00Z` 
+/// to `9999-12-31T23:59:59.999999999Z`.
+/// 
+pub fn timestamp_generator() {
   // prng can only generate good integers in the range 
   // [-2_147_483_648, 2_147_483_647]
   // 
+  // So we must get to the range we need by generating the values in parts, then
+  // adding them together. 
+  //
   // The smallest number of milliseconds we need to generate:
-  // > d=new Date("0000-01-01T00:00:00+23:59"); d.getTime()
-  // -62_167_305_540_000 ms
-  //     -62_167_305_540 s
+  // > d=new Date("0000-01-01T00:00:00"); d.getTime()
+  // -62_167_201_438_000 ms
+  //     -62_167_201_438 s
   //
   // The largest number of milliseconds without leap second we need to generate:
-  // > d=new Date("9999-12-31T23:59:59-23:59"); d.getTime()
-  // 253_402_387_139_000 ms 
-  //     253_402_387_139 s
+  // > d=new Date("9999-12-31T23:59:59"); d.getTime()
+  // 253_402_318_799_000 ms 
+  //     253_402_318_799 s
   //
-  // (Add in one second to the largest value if you need leap seconds.)
-  //
-  // So we can get to the range we need by generating the values in parts, then
-  // adding them together.  This will also 
 
   let megasecond_generator = {
     use second <- qcheck.map(qcheck.int_uniform_inclusive(-62_167, 253_402))
     second * 1_000_000
   }
 
-  let second_generator = qcheck.int_uniform_inclusive(-305_540, 387_139)
+  let second_generator = qcheck.int_uniform_inclusive(-201_438, 318_799)
 
-  use megasecond, second <- qcheck.map2(
+  use megasecond, second, nanosecond <- qcheck.map3(
     g1: megasecond_generator,
     g2: second_generator,
+    g3: qcheck.int_uniform_inclusive(0, 999_999_999),
   )
   let total_seconds = megasecond + second
 
   let assert True =
-    -62_167_305_540 <= total_seconds && total_seconds <= 253_402_387_140
+    -62_167_201_438 <= total_seconds && total_seconds <= 253_402_318_799
 
-  total_seconds
+  timestamp.from_unix_seconds_and_nanoseconds(total_seconds, nanosecond)
 }
 
 pub fn date_time_generator(
