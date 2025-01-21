@@ -237,6 +237,60 @@ pub fn to_rfc3339_12_test() {
   |> should.equal("0100-01-01T00:00:00Z")
 }
 
+pub fn to_rfc3339_13_test() {
+  timestamp.from_unix_seconds_and_nanoseconds(0, 1)
+  |> timestamp.to_rfc3339(0)
+  |> should.equal("1970-01-01T00:00:00.000000001Z")
+}
+
+pub fn to_rfc3339_14_test() {
+  timestamp.from_unix_seconds_and_nanoseconds(-1, 12)
+  |> timestamp.to_rfc3339(0)
+  |> should.equal("1969-12-31T23:59:59.000000012Z")
+}
+
+pub fn to_rfc3339_15_test() {
+  timestamp.from_unix_seconds_and_nanoseconds(1, 123)
+  |> timestamp.to_rfc3339(0)
+  |> should.equal("1970-01-01T00:00:01.000000123Z")
+}
+
+pub fn to_rfc3339_16_test() {
+  timestamp.from_unix_seconds_and_nanoseconds(0, 1230)
+  |> timestamp.to_rfc3339(0)
+  |> should.equal("1970-01-01T00:00:00.00000123Z")
+}
+
+pub fn to_rfc3339_17_test() {
+  timestamp.from_unix_seconds_and_nanoseconds(0, 500_600_000)
+  |> timestamp.to_rfc3339(0)
+  |> should.equal("1970-01-01T00:00:00.5006Z")
+}
+
+pub fn to_rfc3339_18_test() {
+  timestamp.from_unix_seconds_and_nanoseconds(0, 500_006)
+  |> timestamp.to_rfc3339(0)
+  |> should.equal("1970-01-01T00:00:00.000500006Z")
+}
+
+pub fn to_rfc3339_19_test() {
+  timestamp.from_unix_seconds_and_nanoseconds(0, 999_999_999)
+  |> timestamp.to_rfc3339(0)
+  |> should.equal("1970-01-01T00:00:00.999999999Z")
+}
+
+pub fn to_rfc3339_20_test() {
+  timestamp.from_unix_seconds_and_nanoseconds(0, 0)
+  |> timestamp.to_rfc3339(0)
+  |> should.equal("1970-01-01T00:00:00Z")
+}
+
+pub fn to_rfc3339_21_test() {
+  timestamp.from_unix_seconds_and_nanoseconds(0, 1_000_000_001)
+  |> timestamp.to_rfc3339(0)
+  |> should.equal("1970-01-01T00:00:01.000000001Z")
+}
+
 // RFC 3339 Parsing
 
 pub fn parse_rfc3339_0_test() {
@@ -273,10 +327,8 @@ pub fn parse_rfc3339_3_test() {
   |> should.equal(#(60, 550_000_000))
 }
 
-pub fn timestamp_rfc3339_timestamp_roundtrip_property_test() {
-  use timestamp <- qcheck.given(
-    rfc3339_generator.timestamp_with_zero_nanoseconds_generator(),
-  )
+pub fn timestamp_rfc3339_string_timestamp_roundtrip_property_test() {
+  use timestamp <- qcheck.given(rfc3339_generator.timestamp_generator())
 
   let assert Ok(parsed_timestamp) =
     timestamp
@@ -286,16 +338,19 @@ pub fn timestamp_rfc3339_timestamp_roundtrip_property_test() {
   timestamp.compare(timestamp, parsed_timestamp) == order.Eq
 }
 
-pub fn rfc3339_string_timestamp_rfc3339_string_round_tripping_test() {
-  use timestamp <- qcheck.given(
-    // TODO: switch to generator with nanoseconds once to_rfc3339 handles
-    // fractional seconds.
-    rfc3339_generator.timestamp_with_zero_nanoseconds_generator(),
-  )
-  let assert Ok(parsed_timestamp) =
-    timestamp.to_rfc3339(timestamp, 0) |> timestamp.parse_rfc3339()
+pub fn rfc3339_string_timestamp_rfc3339_string_roundtrip_property_test() {
+  use date_time <- qcheck.given(rfc3339_generator.date_time_generator(
+    with_leap_second: True,
+    second_fraction_spec: rfc3339_generator.Default,
+    avoid_erlang_errors: False,
+  ))
 
-  timestamp == parsed_timestamp
+  let assert Ok(original_timestamp) = timestamp.parse_rfc3339(date_time)
+
+  let assert Ok(roundtrip_timestamp) =
+    original_timestamp |> timestamp.to_rfc3339(0) |> timestamp.parse_rfc3339
+
+  timestamp.compare(original_timestamp, roundtrip_timestamp) == order.Eq
 }
 
 // Check against OCaml Ptime reference implementation.
