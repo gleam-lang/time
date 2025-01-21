@@ -338,6 +338,21 @@ pub fn timestamp_rfc3339_string_timestamp_roundtrip_property_test() {
   timestamp.compare(timestamp, parsed_timestamp) == order.Eq
 }
 
+pub fn rfc3339_string_timestamp_rfc3339_string_roundtrip_property_test() {
+  use date_time <- qcheck.given(rfc3339_generator.date_time_generator(
+    with_leap_second: True,
+    second_fraction_spec: rfc3339_generator.Default,
+    avoid_erlang_errors: False,
+  ))
+
+  let assert Ok(original_timestamp) = timestamp.parse_rfc3339(date_time)
+
+  let assert Ok(roundtrip_timestamp) =
+    original_timestamp |> timestamp.to_rfc3339(0) |> timestamp.parse_rfc3339
+
+  timestamp.compare(original_timestamp, roundtrip_timestamp) == order.Eq
+}
+
 // Check against OCaml Ptime reference implementation.
 //
 // These test cases include leap seconds.
