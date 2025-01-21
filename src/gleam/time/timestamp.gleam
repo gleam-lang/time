@@ -1,6 +1,7 @@
 import gleam/bit_array
 import gleam/float
 import gleam/int
+import gleam/list
 import gleam/order
 import gleam/result
 import gleam/string
@@ -207,6 +208,7 @@ pub fn to_rfc3339(timestamp: Timestamp, offset_minutes offset: Int) -> String {
   let out = out <> n4(years) <> "-" <> n2(months) <> "-" <> n2(days)
   let out = out <> "T"
   let out = out <> n2(hours) <> ":" <> n2(minutes) <> ":" <> n2(seconds)
+  let out = out <> show_second_fraction(timestamp.nanoseconds)
   case int.compare(offset, 0) {
     order.Eq -> out <> "Z"
     order.Gt -> out <> "+" <> n2(offset_hours) <> ":" <> n2(offset_minutes)
@@ -261,6 +263,70 @@ fn to_civil(minutes: Int) -> #(Int, Int, Int) {
     False -> year
   }
   #(year, month, day)
+}
+
+/// Converts nanoseconds into a `String` representation of fractional seconds.
+/// 
+/// Assumes that `nanoseconds < 1_000_000_000`, which will be true for any 
+/// normalised timestamp.
+/// 
+fn show_second_fraction(nanoseconds: Int) -> String {
+  case int.compare(nanoseconds, 0) {
+    // Zero fractional seconds are not shown.
+    order.Lt | order.Eq -> ""
+    order.Gt -> {
+      let second_fraction_part = {
+        nanoseconds
+        |> get_zero_padded_digits
+        |> remove_trailing_zeros
+        |> list.map(int.to_string)
+        |> string.join("")
+      }
+
+      "." <> second_fraction_part
+    }
+  }
+}
+
+/// Given a list of digits, return new list with any trailing zeros removed.
+/// 
+fn remove_trailing_zeros(digits: List(Int)) -> List(Int) {
+  let reversed_digits = list.reverse(digits)
+
+  do_remove_trailing_zeros(reversed_digits)
+}
+
+fn do_remove_trailing_zeros(reversed_digits) {
+  case reversed_digits {
+    [] -> []
+    [digit, ..digits] if digit == 0 -> do_remove_trailing_zeros(digits)
+    reversed_digits -> list.reverse(reversed_digits)
+  }
+}
+
+/// Returns the list of digits of `number`.  If the number of digits is less 
+/// than 9, the result is zero-padded at the front.
+/// 
+fn get_zero_padded_digits(number: Int) -> List(Int) {
+  do_get_zero_padded_digits(number, [], 0)
+}
+
+fn do_get_zero_padded_digits(
+  number: Int,
+  digits: List(Int),
+  count: Int,
+) -> List(Int) {
+  case number {
+    number if number <= 0 && count >= 9 -> digits
+    number if number <= 0 ->
+      // Zero-pad the digits at the front until we have at least 9 digits.
+      do_get_zero_padded_digits(number, [0, ..digits], count + 1)
+    number -> {
+      let digit = number % 10
+      let number = floored_div(number, 10.0)
+      do_get_zero_padded_digits(number, [digit, ..digits], count + 1)
+    }
+  }
 }
 
 /// Parses an RFC 3339 formatted time string into a `Timestamp`.
