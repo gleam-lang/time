@@ -731,7 +731,7 @@ pub fn normalise_positive_millis_8_test() {
 pub fn from_calendar_0_test() {
   timestamp.from_calendar(
     date: Date(year: 2024, month: December, day: 25),
-    time: TimeOfDay(hours: 12, minutes: 30, seconds: 50),
+    time: TimeOfDay(hours: 12, minutes: 30, seconds: 50, nanoseconds: 0),
     offset: duration.empty,
   )
   |> timestamp.to_rfc3339(duration.empty)
@@ -741,9 +741,19 @@ pub fn from_calendar_0_test() {
 pub fn from_calendar_1_test() {
   timestamp.from_calendar(
     date: Date(year: 50, month: August, day: 2),
-    time: TimeOfDay(hours: 4, minutes: 10, seconds: 2),
+    time: TimeOfDay(hours: 4, minutes: 10, seconds: 2, nanoseconds: 0),
     offset: duration.seconds(120),
   )
   |> timestamp.to_rfc3339(duration.empty)
   |> should.equal("0050-08-02T04:08:02Z")
+}
+
+pub fn from_calendar_2_test() {
+  timestamp.from_calendar(
+    date: Date(year: 2024, month: December, day: 25),
+    time: TimeOfDay(hours: 12, minutes: 30, seconds: 50, nanoseconds: 1_000_000),
+    offset: duration.empty,
+  )
+  |> timestamp.to_rfc3339(duration.empty)
+  |> should.equal("2024-12-25T12:30:50.001Z")
 }

@@ -260,8 +260,9 @@ pub fn to_calendar(
     11 -> calendar.November
     _ -> calendar.December
   }
+  let nanoseconds = timestamp.nanoseconds
   let date = calendar.Date(year:, month:, day:)
-  let time = calendar.TimeOfDay(hours:, minutes:, seconds:)
+  let time = calendar.TimeOfDay(hours:, minutes:, seconds:, nanoseconds:)
   #(date, time)
 }
 
@@ -310,7 +311,7 @@ pub fn from_calendar(
     hours: time.hours,
     minutes: time.minutes,
     seconds: time.seconds,
-    second_fraction_as_nanoseconds: 0,
+    second_fraction_as_nanoseconds: time.nanoseconds,
     offset_seconds: float.round(duration.to_seconds(offset)),
   )
 }

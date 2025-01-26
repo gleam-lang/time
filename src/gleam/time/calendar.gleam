@@ -49,8 +49,7 @@ pub type Date {
 /// The time of day. Ambiguous without a date and time zone. 
 ///
 pub type TimeOfDay {
-  // TODO: add nanoseconds
-  TimeOfDay(hours: Int, minutes: Int, seconds: Int)
+  TimeOfDay(hours: Int, minutes: Int, seconds: Int, nanoseconds: Int)
 }
 
 /// The 12 months of the year.
