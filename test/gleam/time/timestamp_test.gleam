@@ -3,9 +3,9 @@ import gleam/list
 import gleam/order
 import gleam/result
 import gleam/string
-import gleam/time/calendar.{August, Date, December, TimeOfDay}
+import gleam/time/calendar.{August, Date, December, January, TimeOfDay}
 import gleam/time/duration
-import gleam/time/rfc3339_generator
+import gleam/time/generators
 import gleam/time/timestamp
 import gleeunit/should
 import qcheck
@@ -329,20 +329,20 @@ pub fn parse_rfc3339_3_test() {
 }
 
 pub fn timestamp_rfc3339_string_timestamp_roundtrip_property_test() {
-  use timestamp <- qcheck.given(rfc3339_generator.timestamp_generator())
+  use timestamp <- qcheck.given(generators.timestamp())
 
   let assert Ok(parsed_timestamp) =
     timestamp
     |> timestamp.to_rfc3339(calendar.utc_offset)
     |> timestamp.parse_rfc3339
 
-  timestamp.compare(timestamp, parsed_timestamp) == order.Eq
+  timestamp == parsed_timestamp
 }
 
 pub fn rfc3339_string_timestamp_rfc3339_string_roundtrip_property_test() {
-  use date_time <- qcheck.given(rfc3339_generator.date_time_generator(
+  use date_time <- qcheck.given(generators.rfc3339(
     with_leap_second: True,
-    second_fraction_spec: rfc3339_generator.Default,
+    second_fraction_spec: generators.Default,
     avoid_erlang_errors: False,
   ))
 
@@ -353,7 +353,7 @@ pub fn rfc3339_string_timestamp_rfc3339_string_roundtrip_property_test() {
     |> timestamp.to_rfc3339(calendar.utc_offset)
     |> timestamp.parse_rfc3339
 
-  timestamp.compare(original_timestamp, roundtrip_timestamp) == order.Eq
+  original_timestamp == roundtrip_timestamp
 }
 
 // Check against OCaml Ptime reference implementation.
@@ -515,11 +515,11 @@ pub fn parse_rfc3339_matches_oracle_example_10_test() {
 }
 
 pub fn parse_rfc3339_matches_oracle_property_test() {
-  use date_time <- qcheck.given(rfc3339_generator.date_time_generator(
+  use date_time <- qcheck.given(generators.rfc3339(
     // JavaScript oracle cannot handle leap-seconds.
     with_leap_second: False,
     // JavaScript oracle has max precision of milliseconds.
-    second_fraction_spec: rfc3339_generator.WithMaxLength(3),
+    second_fraction_spec: generators.WithMaxLength(3),
     // Some valid timestamps cannot be parsed by the Erlang oracle.
     avoid_erlang_errors: True,
   ))
@@ -528,9 +528,9 @@ pub fn parse_rfc3339_matches_oracle_property_test() {
 }
 
 pub fn parse_rfc3339_succeeds_for_valid_inputs_property_test() {
-  use date_time <- qcheck.given_result(rfc3339_generator.date_time_generator(
+  use date_time <- qcheck.given_result(generators.rfc3339(
     with_leap_second: True,
-    second_fraction_spec: rfc3339_generator.Default,
+    second_fraction_spec: generators.Default,
     avoid_erlang_errors: False,
   ))
   timestamp.parse_rfc3339(date_time)
@@ -756,4 +756,22 @@ pub fn from_calendar_2_test() {
   )
   |> timestamp.to_rfc3339(duration.empty)
   |> should.equal("2024-12-25T12:30:50.001Z")
+}
+
+pub fn to_calendar_0_test() {
+  timestamp.from_unix_seconds(0)
+  |> timestamp.to_calendar(calendar.utc_offset)
+  |> should.equal(#(
+    Date(year: 1970, month: January, day: 1),
+    TimeOfDay(hours: 0, minutes: 0, seconds: 0, nanoseconds: 0),
+  ))
+}
+
+pub fn calendar_roundtrip_test() {
+  use timestamp1 <- qcheck.given(generators.timestamp())
+  let #(date, time_of_day) =
+    timestamp.to_calendar(timestamp1, calendar.utc_offset)
+  let timestamp2 =
+    timestamp.from_calendar(date, time_of_day, calendar.utc_offset)
+  timestamp1 == timestamp2
 }

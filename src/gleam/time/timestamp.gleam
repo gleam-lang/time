@@ -237,8 +237,21 @@ fn pad_digit(digit: Int, to desired_length: Int) -> String {
   int.to_string(digit) |> string.pad_start(desired_length, "0")
 }
 
-// TODO: test
-// TODO: document
+/// Convert a `Timestamp` to calendar time, suitable for presenting to a human
+/// to read.
+///
+/// If you want a machine to use the time value then you should not use this
+/// function and should instead keep it as a timestamp. See the documentation
+/// for the `gleam/time/calendar` module for more information.
+///
+/// # Examples
+///
+/// ```gleam
+/// timestamp.from_unix_seconds(0)
+/// |> timestamp.to_calendar(calendar.utc_offset)
+/// // -> #(Date(1970, January, 1), TimeOfDay(0, 0, 0, 0))
+/// ```
+///
 pub fn to_calendar(
   timestamp: Timestamp,
   offset: Duration,
@@ -283,8 +296,20 @@ fn to_calendar_from_offset(
   #(year, month, day, hours, minutes, seconds)
 }
 
-// TODO: test
-// TODO: document
+/// Create a `Timestamp` from a human-readable calendar time.
+///
+/// # Examples
+///
+/// ```gleam
+/// timestamp.from_calendar(
+///   date: calendar.Date(2024, calendar.December, 25),
+///   time: calendar.TimeOfDay(12, 30, 50, 0),
+///   offset: calendar.utc_offset,
+/// )
+/// |> timestamp.to_rfc3339(calendar.utc_offset)
+/// // -> "2024-12-25T12:30:50Z"
+/// ```
+///
 pub fn from_calendar(
   date date: calendar.Date,
   time time: calendar.TimeOfDay,

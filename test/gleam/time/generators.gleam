@@ -8,7 +8,7 @@ import qcheck
 /// Generate timestamps representing instants in the range `0000-01-01T00:00:00Z` 
 /// to `9999-12-31T23:59:59.999999999Z`.
 /// 
-pub fn timestamp_generator() {
+pub fn timestamp() {
   // prng can only generate good integers in the range 
   // [-2_147_483_648, 2_147_483_647]
   // 
@@ -46,7 +46,7 @@ pub fn timestamp_generator() {
   timestamp.from_unix_seconds_and_nanoseconds(total_seconds, nanosecond)
 }
 
-pub fn date_time_generator(
+pub fn rfc3339(
   with_leap_second with_leap_second: Bool,
   second_fraction_spec second_fraction_spec: SecondFractionSpec,
   avoid_erlang_errors avoid_erlang_errors: Bool,
@@ -91,21 +91,6 @@ pub fn date_time_generator(
     }
     False -> date_time
   }
-}
-
-/// Generate date-time strings with no fractional second component.  
-/// 
-/// This is a temporary solution until the to_rfc3339 function handles second 
-/// fractions.
-pub fn date_time_no_second_fraction_generator(
-  with_leap_second with_leap_second: Bool,
-) -> qcheck.Generator(String) {
-  use full_date, t, full_time <- qcheck.map3(
-    g1: full_date_generator(),
-    g2: t_generator(),
-    g3: full_time_no_second_fraction_generator(with_leap_second),
-  )
-  full_date <> t <> full_time
 }
 
 fn full_date_generator() -> qcheck.Generator(String) {
@@ -169,16 +154,6 @@ fn full_time_generator(
   partial_time <> time_offset
 }
 
-fn full_time_no_second_fraction_generator(
-  with_leap_second with_leap_second: Bool,
-) -> qcheck.Generator(String) {
-  use partial_time, time_offset <- qcheck.map2(
-    g1: partial_time_no_second_fraction_generator(with_leap_second),
-    g2: time_offset_generator(),
-  )
-  partial_time <> time_offset
-}
-
 fn partial_time_generator(
   with_leap_second with_leap_second: Bool,
   second_fraction_spec second_fraction_spec: SecondFractionSpec,
@@ -201,20 +176,6 @@ fn partial_time_generator(
   |> qcheck.apply(
     qcheck.option(time_second_fraction_generator(second_fraction_spec)),
   )
-}
-
-fn partial_time_no_second_fraction_generator(
-  with_leap_second with_leap_second: Bool,
-) {
-  qcheck.return({
-    use time_hour <- qcheck.parameter
-    use time_minute <- qcheck.parameter
-    use time_second <- qcheck.parameter
-    time_hour <> ":" <> time_minute <> ":" <> time_second
-  })
-  |> qcheck.apply(time_hour_generator())
-  |> qcheck.apply(time_minute_generator())
-  |> qcheck.apply(time_second_generator(with_leap_second))
 }
 
 fn time_hour_generator() -> qcheck.Generator(String) {
