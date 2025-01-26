@@ -12,7 +12,8 @@
 ////   32, but this should not be possible!
 //// - There is not a single unique canonical value for each point in time,
 ////   thanks to time zones. Two different `Date` + `TimeOfDay` value pairs
-////   could represent the 
+////   could represent the same point in time. This means that you can't check
+////   for time equality with `==` when using calendar types.
 ////
 //// Prefer to represent your time using the `Timestamp` type, and convert it
 //// only to calendar types when you need to display them.
@@ -20,15 +21,13 @@
 //// ## Time zone offsets
 ////
 //// This package includes the `utc_offset` value and the `local_offset`
-//// function, which get the offset for the UTC time zone and time zone the
-//// computer running the program is configured to respectively. If you are
-//// running a Gleam web server then the local offset is that of the server the
-//// program is running on, not that of any visitor to the website.
+//// function, which are the offset for the UTC time zone and get the time
+//// offset the computer running the program is configured to respectively.
 ////
 //// If you need to use other offsets in your program then you will need to get
 //// them from somewhere else, such as from a package which loads the
 //// [IANA Time Zone Database](https://www.iana.org/time-zones), or from the
-//// website visitor's web browser.
+//// website visitor's web browser, which your frontend can send for you.
 ////
 //// ## Use in APIs
 ////

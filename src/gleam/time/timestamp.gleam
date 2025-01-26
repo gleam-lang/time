@@ -237,13 +237,6 @@ fn pad_digit(digit: Int, to desired_length: Int) -> String {
   int.to_string(digit) |> string.pad_start(desired_length, "0")
 }
 
-// TODO: implement
-// TODO: test
-// TODO: document
-// pub fn parse_rfc3339(timestamp: String) -> Timestamp {
-//   todo
-// }
-
 // TODO: test
 // TODO: document
 pub fn to_calendar(
@@ -289,15 +282,37 @@ fn to_calendar_from_offset(
   #(year, month, day, hours, minutes, seconds)
 }
 
-// TODO: implement
 // TODO: test
 // TODO: document
 pub fn from_calendar(
-  date: calendar.Date,
-  time: calendar.TimeOfDay,
-  offset: Duration,
-) -> #(calendar.Date, calendar.TimeOfDay) {
-  todo
+  date date: calendar.Date,
+  time time: calendar.TimeOfDay,
+  offset offset: Duration,
+) -> Timestamp {
+  let month = case date.month {
+    calendar.January -> 1
+    calendar.February -> 2
+    calendar.March -> 3
+    calendar.April -> 4
+    calendar.May -> 5
+    calendar.June -> 6
+    calendar.July -> 7
+    calendar.August -> 8
+    calendar.September -> 9
+    calendar.October -> 10
+    calendar.November -> 11
+    calendar.December -> 12
+  }
+  from_date_time(
+    year: date.year,
+    month:,
+    day: date.day,
+    hours: time.hours,
+    minutes: time.minutes,
+    seconds: time.seconds,
+    second_fraction_as_nanoseconds: 0,
+    offset_seconds: float.round(duration.to_seconds(offset)),
+  )
 }
 
 fn modulo(n: Int, m: Int) -> Int {

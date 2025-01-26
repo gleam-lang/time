@@ -3,7 +3,7 @@ import gleam/list
 import gleam/order
 import gleam/result
 import gleam/string
-import gleam/time/calendar
+import gleam/time/calendar.{August, Date, December, TimeOfDay}
 import gleam/time/duration
 import gleam/time/rfc3339_generator
 import gleam/time/timestamp
@@ -726,4 +726,24 @@ pub fn normalise_positive_millis_7_test() {
 pub fn normalise_positive_millis_8_test() {
   timestamp.from_unix_seconds_and_nanoseconds(-1, 2_600_000_000)
   |> should.equal(timestamp.from_unix_seconds_and_nanoseconds(1, 600_000_000))
+}
+
+pub fn from_calendar_0_test() {
+  timestamp.from_calendar(
+    date: Date(year: 2024, month: December, day: 25),
+    time: TimeOfDay(hours: 12, minutes: 30, seconds: 50),
+    offset: duration.empty,
+  )
+  |> timestamp.to_rfc3339(duration.empty)
+  |> should.equal("2024-12-25T12:30:50Z")
+}
+
+pub fn from_calendar_1_test() {
+  timestamp.from_calendar(
+    date: Date(year: 50, month: August, day: 2),
+    time: TimeOfDay(hours: 4, minutes: 10, seconds: 2),
+    offset: duration.seconds(120),
+  )
+  |> timestamp.to_rfc3339(duration.empty)
+  |> should.equal("0050-08-02T04:08:02Z")
 }
