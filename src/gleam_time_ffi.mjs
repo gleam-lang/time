@@ -7,5 +7,5 @@ export function system_time() {
 }
 
 export function local_time_offset_seconds() {
-  return new Date().getTimezoneOffset() * 60;
+  return new Date().getTimezoneOffset() * -60;
 }

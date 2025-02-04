@@ -300,7 +300,7 @@ fn to_calendar_from_offset(
   timestamp: Timestamp,
   offset: Int,
 ) -> #(Int, Int, Int, Int, Int, Int) {
-  let total = timestamp.seconds - { offset * 60 }
+  let total = timestamp.seconds + { offset * 60 }
   let seconds = modulo(total, 60)
   let total_minutes = floored_div(total, 60.0)
   let minutes = modulo(total, 60 * 60) / 60
