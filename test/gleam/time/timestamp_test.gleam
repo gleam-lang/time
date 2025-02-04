@@ -203,15 +203,15 @@ pub fn to_rfc3339_6_test() {
 }
 
 pub fn to_rfc3339_7_test() {
-  timestamp.from_unix_seconds(60 * 60 + 60 * 5)
+  timestamp.from_unix_seconds(-60 * 60 - 60 * 5)
   |> timestamp.to_rfc3339(duration.seconds(65 * 60))
   |> should.equal("1970-01-01T00:00:00+01:05")
 }
 
 pub fn to_rfc3339_8_test() {
   timestamp.from_unix_seconds(0)
-  |> timestamp.to_rfc3339(duration.seconds(-120 * 60))
-  |> should.equal("1970-01-01T02:00:00-02:00")
+  |> timestamp.to_rfc3339(duration.seconds(120 * 60))
+  |> should.equal("1970-01-01T02:00:00+02:00")
 }
 
 pub fn to_rfc3339_9_test() {
