@@ -356,6 +356,25 @@ pub fn rfc3339_string_timestamp_rfc3339_string_roundtrip_property_test() {
   original_timestamp == roundtrip_timestamp
 }
 
+// Eastern US Timezone round trip tests
+pub fn rfc3339_string_timestamp_rfc3339_string_roundtrip_to_est_test() {
+  let assert Ok(date_time) =
+    timestamp.parse_rfc3339("2025-02-04T13:00:00+00:00")
+
+  date_time
+  |> timestamp.to_rfc3339(duration.seconds(-18_000))
+  |> should.equal("2025-02-04T08:00:00-05:00")
+}
+
+pub fn rfc3339_string_timestamp_rfc3339_string_roundtrip_from_est_test() {
+  let assert Ok(date_time) =
+    timestamp.parse_rfc3339("2025-02-04T13:00:00-05:00")
+
+  date_time
+  |> timestamp.to_rfc3339(calendar.utc_offset)
+  |> should.equal("2025-02-04T18:00:00Z")
+}
+
 // Check against OCaml Ptime reference implementation.
 //
 // These test cases include leap seconds.
