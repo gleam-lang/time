@@ -220,8 +220,15 @@ pub fn add(timestamp: Timestamp, duration: Duration) -> Timestamp {
 /// # Examples
 ///
 /// ```gleam
-/// to_rfc3339(from_unix_seconds(1000), 0)
-/// // -> "1970-01-01T00:00:00Z"
+/// timestamp.from_unix_seconds_and_nanoseconds(1000, 123_000_000)
+/// |> to_rfc3339(calendar.utc_offset)
+/// // -> "1970-01-01T00:16:40.123Z"
+/// ```
+///
+/// ```gleam
+/// timestamp.from_unix_seconds(1000)
+/// |> to_rfc3339(duration.seconds(3600))
+/// // -> "1970-01-01T01:16:40+01:00"
 /// ```
 ///
 pub fn to_rfc3339(timestamp: Timestamp, offset: Duration) -> String {
