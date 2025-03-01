@@ -13,12 +13,12 @@ import simplifile
 
 pub fn compare_property_0_test() {
   use #(x, y) <- qcheck.given(qcheck.tuple2(
-    qcheck.int_uniform(),
-    qcheck.int_uniform(),
+    qcheck.uniform_int(),
+    qcheck.uniform_int(),
   ))
   let tx = timestamp.from_unix_seconds(x)
   let ty = timestamp.from_unix_seconds(y)
-  timestamp.compare(tx, ty) == int.compare(x, y)
+  should.equal(timestamp.compare(tx, ty), int.compare(x, y))
 }
 
 pub fn compare_0_test() {
@@ -71,26 +71,26 @@ pub fn difference_2_test() {
 
 pub fn add_property_0_test() {
   use #(x, y) <- qcheck.given(qcheck.tuple2(
-    qcheck.int_uniform(),
-    qcheck.int_uniform(),
+    qcheck.uniform_int(),
+    qcheck.uniform_int(),
   ))
   let expected = timestamp.from_unix_seconds_and_nanoseconds(0, x + y)
   let actual =
     timestamp.from_unix_seconds_and_nanoseconds(0, x)
     |> timestamp.add(duration.nanoseconds(y))
-  expected == actual
+  should.equal(expected, actual)
 }
 
 pub fn add_property_1_test() {
   use #(x, y) <- qcheck.given(qcheck.tuple2(
-    qcheck.int_uniform(),
-    qcheck.int_uniform(),
+    qcheck.uniform_int(),
+    qcheck.uniform_int(),
   ))
   let expected = timestamp.from_unix_seconds_and_nanoseconds(x + y, 0)
   let actual =
     timestamp.from_unix_seconds_and_nanoseconds(x, 0)
     |> timestamp.add(duration.seconds(y))
-  expected == actual
+  should.equal(expected, actual)
 }
 
 pub fn add_0_test() {
@@ -336,7 +336,7 @@ pub fn timestamp_rfc3339_string_timestamp_roundtrip_property_test() {
     |> timestamp.to_rfc3339(calendar.utc_offset)
     |> timestamp.parse_rfc3339
 
-  timestamp == parsed_timestamp
+  should.equal(timestamp, parsed_timestamp)
 }
 
 pub fn rfc3339_string_timestamp_rfc3339_string_roundtrip_property_test() {
@@ -353,7 +353,7 @@ pub fn rfc3339_string_timestamp_rfc3339_string_roundtrip_property_test() {
     |> timestamp.to_rfc3339(calendar.utc_offset)
     |> timestamp.parse_rfc3339
 
-  original_timestamp == roundtrip_timestamp
+  should.equal(original_timestamp, roundtrip_timestamp)
 }
 
 // Eastern US Timezone round trip tests
@@ -543,25 +543,28 @@ pub fn parse_rfc3339_matches_oracle_property_test() {
     avoid_erlang_errors: True,
   ))
 
-  timestamp.parse_rfc3339(date_time) == parse_rfc3339_oracle(date_time)
+  should.equal(
+    timestamp.parse_rfc3339(date_time),
+    parse_rfc3339_oracle(date_time),
+  )
 }
 
 pub fn parse_rfc3339_succeeds_for_valid_inputs_property_test() {
-  use date_time <- qcheck.given_result(generators.rfc3339(
+  use date_time <- qcheck.given(generators.rfc3339(
     with_leap_second: True,
     second_fraction_spec: generators.Default,
     avoid_erlang_errors: False,
   ))
-  timestamp.parse_rfc3339(date_time)
+
+  let _ = timestamp.parse_rfc3339(date_time) |> should.be_ok
+  Nil
 }
 
 pub fn parse_rfc3339_fails_for_invalid_inputs_test() {
   // The chance of randomly generating a valid RFC 3339 string is quite low....
-  use string <- qcheck.given_result(qcheck.string())
-  case timestamp.parse_rfc3339(string) {
-    Error(Nil) -> Ok(Nil)
-    Ok(x) -> Error(x)
-  }
+  use string <- qcheck.given(qcheck.string())
+
+  timestamp.parse_rfc3339(string) |> should.be_error
 }
 
 pub fn parse_rfc3339_bad_leapyear_test() {
@@ -792,5 +795,5 @@ pub fn calendar_roundtrip_test() {
     timestamp.to_calendar(timestamp1, calendar.utc_offset)
   let timestamp2 =
     timestamp.from_calendar(date, time_of_day, calendar.utc_offset)
-  timestamp1 == timestamp2
+  should.equal(timestamp1, timestamp2)
 }

@@ -5,15 +5,15 @@ import gleam/string
 import gleam/time/timestamp
 import qcheck
 
-/// Generate timestamps representing instants in the range `0000-01-01T00:00:00Z` 
+/// Generate timestamps representing instants in the range `0000-01-01T00:00:00Z`
 /// to `9999-12-31T23:59:59.999999999Z`.
-/// 
+///
 pub fn timestamp() {
-  // prng can only generate good integers in the range 
+  // prng can only generate good integers in the range
   // [-2_147_483_648, 2_147_483_647]
-  // 
+  //
   // So we must get to the range we need by generating the values in parts, then
-  // adding them together. 
+  // adding them together.
   //
   // The smallest number of milliseconds we need to generate:
   // > d=new Date("0000-01-01T00:00:00"); d.getTime()
@@ -22,21 +22,21 @@ pub fn timestamp() {
   //
   // The largest number of milliseconds without leap second we need to generate:
   // > d=new Date("9999-12-31T23:59:59"); d.getTime()
-  // 253_402_318_799_000 ms 
+  // 253_402_318_799_000 ms
   //     253_402_318_799 s
   //
 
   let megasecond_generator = {
-    use second <- qcheck.map(qcheck.int_uniform_inclusive(-62_167, 253_402))
+    use second <- qcheck.map(qcheck.bounded_int(-62_167, 253_402))
     second * 1_000_000
   }
 
-  let second_generator = qcheck.int_uniform_inclusive(-201_438, 318_799)
+  let second_generator = qcheck.bounded_int(-201_438, 318_799)
 
   use megasecond, second, nanosecond <- qcheck.map3(
-    g1: megasecond_generator,
-    g2: second_generator,
-    g3: qcheck.int_uniform_inclusive(0, 999_999_999),
+    megasecond_generator,
+    second_generator,
+    qcheck.bounded_int(0, 999_999_999),
   )
   let total_seconds = megasecond + second
 
@@ -52,9 +52,9 @@ pub fn rfc3339(
   avoid_erlang_errors avoid_erlang_errors: Bool,
 ) -> qcheck.Generator(String) {
   use full_date, t, full_time <- qcheck.map3(
-    g1: full_date_generator(),
-    g2: t_generator(),
-    g3: full_time_generator(with_leap_second, second_fraction_spec),
+    full_date_generator(),
+    t_generator(),
+    full_time_generator(with_leap_second, second_fraction_spec),
   )
   let date_time = full_date <> t <> full_time
 
@@ -140,7 +140,7 @@ fn is_leap_year(year_input: String) -> Bool {
 }
 
 fn t_generator() {
-  qcheck.from_generators([qcheck.return("T"), qcheck.return("t")])
+  qcheck.from_generators(qcheck.constant("T"), [qcheck.constant("t")])
 }
 
 fn full_time_generator(
@@ -148,8 +148,8 @@ fn full_time_generator(
   second_fraction_spec second_fraction_spec: SecondFractionSpec,
 ) -> qcheck.Generator(String) {
   use partial_time, time_offset <- qcheck.map2(
-    g1: partial_time_generator(with_leap_second, second_fraction_spec),
-    g2: time_offset_generator(),
+    partial_time_generator(with_leap_second, second_fraction_spec),
+    time_offset_generator(),
   )
   partial_time <> time_offset
 }
@@ -158,7 +158,7 @@ fn partial_time_generator(
   with_leap_second with_leap_second: Bool,
   second_fraction_spec second_fraction_spec: SecondFractionSpec,
 ) -> qcheck.Generator(String) {
-  qcheck.return({
+  qcheck.constant({
     use time_hour <- qcheck.parameter
     use time_minute <- qcheck.parameter
     use time_second <- qcheck.parameter
@@ -174,7 +174,7 @@ fn partial_time_generator(
   |> qcheck.apply(time_minute_generator())
   |> qcheck.apply(time_second_generator(with_leap_second))
   |> qcheck.apply(
-    qcheck.option(time_second_fraction_generator(second_fraction_spec)),
+    qcheck.option_from(time_second_fraction_generator(second_fraction_spec)),
   )
 }
 
@@ -201,7 +201,7 @@ fn zero_padded_digits_generator(
   from min: Int,
   to max: Int,
 ) -> qcheck.Generator(String) {
-  use n <- qcheck.map(qcheck.int_uniform_inclusive(min, max))
+  use n <- qcheck.map(qcheck.bounded_int(min, max))
   int.to_string(n) |> string.pad_start(to: length, with: "0")
 }
 
@@ -223,39 +223,39 @@ fn time_second_fraction_generator(
 }
 
 fn one_or_more_digits_generator() -> qcheck.Generator(String) {
-  qcheck.string_non_empty_from(qcheck.char_digit())
+  qcheck.non_empty_string_from(qcheck.ascii_digit_codepoint())
 }
 
 fn digits_generator(
   min_count min_count: Int,
   max_count max_count: Int,
 ) -> qcheck.Generator(String) {
-  qcheck.string_generic(
-    qcheck.char_digit(),
-    qcheck.int_uniform_inclusive(min_count, max_count),
+  qcheck.generic_string(
+    qcheck.ascii_digit_codepoint(),
+    qcheck.bounded_int(min_count, max_count),
   )
 }
 
 fn time_offset_generator() -> qcheck.Generator(String) {
-  qcheck.from_generators([z_generator(), time_numoffset_generator()])
+  qcheck.from_generators(z_generator(), [time_numoffset_generator()])
 }
 
 fn z_generator() {
-  qcheck.from_generators([qcheck.return("Z"), qcheck.return("z")])
+  qcheck.from_generators(qcheck.constant("Z"), [qcheck.constant("z")])
 }
 
 fn time_numoffset_generator() -> qcheck.Generator(String) {
   use plus_or_minus, time_hour, time_minute <- qcheck.map3(
-    g1: plus_or_minus_generator(),
-    g2: time_hour_generator(),
-    g3: time_minute_generator(),
+    plus_or_minus_generator(),
+    time_hour_generator(),
+    time_minute_generator(),
   )
 
   plus_or_minus <> time_hour <> ":" <> time_minute
 }
 
 fn plus_or_minus_generator() -> qcheck.Generator(String) {
-  qcheck.from_generators([qcheck.return("+"), qcheck.return("-")])
+  qcheck.from_generators(qcheck.constant("+"), [qcheck.constant("-")])
 }
 
 fn unwrap_optional_string(optional_string: option.Option(String)) -> String {
