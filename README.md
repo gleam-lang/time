@@ -10,6 +10,6 @@ gleam add gleam_time
 ```
 
 Working with time can be difficult so be sure to read the documentation,
-staring with the [`gleam/time/timestamp`][timestamp] module.
+starting with the [`gleam/time/timestamp`][timestamp] module.
 
 [timestamp]: https://hexdocs.pm/gleam_time/gleam/time/timestamp.html
