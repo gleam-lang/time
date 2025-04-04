@@ -115,3 +115,54 @@ pub fn month_to_string(month: Month) -> String {
     December -> "December"
   }
 }
+
+/// Returns the number for the month, where January is 1 and December is 12.
+///
+/// # Examples
+///
+/// ```gleam
+/// month_to_int(January)
+/// // -> 1
+/// ```
+pub fn month_to_int(month: Month) -> Int {
+  case month {
+    January -> 1
+    February -> 2
+    March -> 3
+    April -> 4
+    May -> 5
+    June -> 6
+    July -> 7
+    August -> 8
+    September -> 9
+    October -> 10
+    November -> 11
+    December -> 12
+  }
+}
+
+/// Returns the month for a given number, where January is 1 and December is 12.
+///
+/// # Examples
+///
+/// ```gleam
+/// month_from_int(1)
+/// // -> Ok(January)
+/// ```
+pub fn month_from_int(month: Int) -> Result(Month, Nil) {
+  case month {
+    1 -> Ok(January)
+    2 -> Ok(February)
+    3 -> Ok(March)
+    4 -> Ok(April)
+    5 -> Ok(May)
+    6 -> Ok(June)
+    7 -> Ok(July)
+    8 -> Ok(August)
+    9 -> Ok(September)
+    10 -> Ok(October)
+    11 -> Ok(November)
+    12 -> Ok(December)
+    _ -> Error(Nil)
+  }
+}

@@ -4,6 +4,8 @@
 
 - The `duration` module gains the `Unit` type and the `minutes` and `hours`
   functions.
+- The `calendar` module gains the `month_to_int` and `month_from_int`
+  functions.
 
 ## v1.1.0 - 2025-03-29
 
