@@ -1,5 +1,9 @@
 # Changelog
 
+## Unreleasd
+
+- The `duration` module gains the `minutes` and `hours` functions.
+
 ## v1.1.0 - 2025-03-29
 
 - The `calendar` module gains the `month_to_string` function.

@@ -162,6 +162,16 @@ pub fn seconds(amount: Int) -> Duration {
   Duration(amount, 0)
 }
 
+/// Create a duration of a number of minutes.
+pub fn minutes(amount: Int) -> Duration {
+  seconds(amount * 60)
+}
+
+/// Create a duration of a number of hours.
+pub fn hours(amount: Int) -> Duration {
+  seconds(amount * 60 * 60)
+}
+
 /// Create a duration of a number of milliseconds.
 pub fn milliseconds(amount: Int) -> Duration {
   let remainder = amount % 1000
