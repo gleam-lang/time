@@ -24,6 +24,33 @@ pub opaque type Duration {
   Duration(seconds: Int, nanoseconds: Int)
 }
 
+/// A division of time.
+///
+/// Note that not all months and years are the same length, so a reasonable
+/// average length is used by this module.
+///
+pub type Unit {
+  Nanosecond
+  /// 1000 nanoseconds.
+  Microsecond
+  /// 1000 microseconds.
+  Millisecond
+  /// 1000 microseconds.
+  Second
+  /// 60 seconds.
+  Minute
+  /// 60 minutes.
+  Hour
+  /// 24 hours.
+  Day
+  /// 7 days.
+  Week
+  /// About 30 days. Real calendar months vary in length.
+  Month
+  /// About 365.25 days. Real calendar years vary in length.
+  Year
+}
+
 /// Ensure the duration is represented with `nanoseconds` being positive and
 /// less than 1 second.
 ///

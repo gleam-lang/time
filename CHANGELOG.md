@@ -2,7 +2,8 @@
 
 ## Unreleasd
 
-- The `duration` module gains the `minutes` and `hours` functions.
+- The `duration` module gains the `Unit` type and the `minutes` and `hours`
+  functions.
 
 ## v1.1.0 - 2025-03-29
 
