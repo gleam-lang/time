@@ -54,7 +54,7 @@ pub type Unit {
 /// Convert a duration to a number of the largest number of a unit, serving as
 /// a rough description of the duration that a human can understand.
 ///
-/// The sized used for each unit are described in the documentation for the
+/// The size used for each unit are described in the documentation for the
 /// `Unit` type.
 ///
 /// ```gleam
