@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleasd
+## Unreleased
 
 - Fixed a bug where the `milliseconds` function could return an incorrect value
   for negative numbers.
