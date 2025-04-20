@@ -83,6 +83,12 @@ pub const utc_offset = duration.empty
 /// For example, if you are making a web application that runs on a server you
 /// want _their_ computer's time zone, not yours.
 ///
+/// This is the _current local_ offset, not the current local time zone. This
+/// means that while it will result in the expected outcome for the current
+/// time, it may result in unexpected output if used with other timestamps. For
+/// example: a timestamp that would locally be during daylight savings time if
+/// is it not currently daylight savings time when this function is called.
+///
 pub fn local_offset() -> duration.Duration {
   duration.seconds(local_time_offset_seconds())
 }
