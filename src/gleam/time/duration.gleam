@@ -45,10 +45,59 @@ pub type Unit {
   Day
   /// 7 days.
   Week
-  /// About 30 days. Real calendar months vary in length.
+  /// About 30.4375 days. Real calendar months vary in length.
   Month
   /// About 365.25 days. Real calendar years vary in length.
   Year
+}
+
+/// Convert a duration to a number of the largest number of a unit, serving as
+/// a rough description of the duration that a human can understand.
+///
+/// The sized used for each unit are described in the documentation for the
+/// `Unit` type.
+///
+/// ```gleam
+/// seconds(125)
+/// |> approximate
+/// // -> #(2, Minute)
+/// ```
+///
+/// This function rounds _towards zero_. This means that if a duration is just
+/// short of 2 days then it will approximate to 1 day.
+///
+/// ```gleam
+/// hours(47)
+/// |> approximate
+/// // -> #(1, Day)
+/// ```
+///
+pub fn approximate(duration: Duration) -> #(Int, Unit) {
+  let Duration(seconds: s, nanoseconds: ns) = duration
+  let minute = 60
+  let hour = minute * 60
+  let day = hour * 24
+  let week = day * 7
+  let year = day * 365 + hour * 6
+  let month = year / 12
+  let microsecond = 1000
+  let millisecond = microsecond * 1000
+  case Nil {
+    _ if s < 0 -> {
+      let #(amount, unit) = Duration(-s, -ns) |> normalise |> approximate
+      #(-amount, unit)
+    }
+    _ if s >= year -> #(s / year, Year)
+    _ if s >= month -> #(s / month, Month)
+    _ if s >= week -> #(s / week, Week)
+    _ if s >= day -> #(s / day, Day)
+    _ if s >= hour -> #(s / hour, Hour)
+    _ if s >= minute -> #(s / minute, Minute)
+    _ if s > 0 -> #(s, Second)
+    _ if ns >= millisecond -> #(ns / millisecond, Millisecond)
+    _ if ns >= microsecond -> #(ns / microsecond, Microsecond)
+    _ -> #(ns, Nanosecond)
+  }
 }
 
 /// Ensure the duration is represented with `nanoseconds` being positive and
@@ -206,6 +255,7 @@ pub fn milliseconds(amount: Int) -> Duration {
   let nanoseconds = remainder * 1_000_000
   let seconds = overflow / 1000
   Duration(seconds, nanoseconds)
+  |> normalise
 }
 
 /// Create a duration of a number of nanoseconds.

@@ -2,8 +2,10 @@
 
 ## Unreleasd
 
-- The `duration` module gains the `Unit` type and the `minutes` and `hours`
-  functions.
+- Fixed a bug where the `milliseconds` function could return an incorrect value
+  for negative numbers.
+- The `duration` module gains the `Unit` type and the `approximate`, `minutes`
+  and `hours` functions.
 - The `calendar` module gains the `month_to_int` and `month_from_int`
   functions.
 

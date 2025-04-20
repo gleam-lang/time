@@ -361,3 +361,147 @@ pub fn difference_2_test() {
   duration.difference(duration.seconds(2), duration.milliseconds(3500))
   |> should.equal(duration.milliseconds(1500))
 }
+
+pub fn approximate_0_test() {
+  duration.minutes(10)
+  |> duration.approximate
+  |> should.equal(#(10, duration.Minute))
+}
+
+pub fn approximate_1_test() {
+  duration.seconds(30)
+  |> duration.approximate
+  |> should.equal(#(30, duration.Second))
+}
+
+pub fn approximate_2_test() {
+  duration.hours(23)
+  |> duration.approximate
+  |> should.equal(#(23, duration.Hour))
+}
+
+pub fn approximate_3_test() {
+  duration.hours(24)
+  |> duration.approximate
+  |> should.equal(#(1, duration.Day))
+}
+
+pub fn approximate_4_test() {
+  duration.hours(48)
+  |> duration.approximate
+  |> should.equal(#(2, duration.Day))
+}
+
+pub fn approximate_5_test() {
+  duration.hours(47)
+  |> duration.approximate
+  |> should.equal(#(1, duration.Day))
+}
+
+pub fn approximate_6_test() {
+  duration.hours(24 * 7)
+  |> duration.approximate
+  |> should.equal(#(1, duration.Week))
+}
+
+pub fn approximate_7_test() {
+  duration.hours(24 * 30)
+  |> duration.approximate
+  |> should.equal(#(4, duration.Week))
+}
+
+pub fn approximate_8_test() {
+  duration.hours(24 * 31)
+  |> duration.approximate
+  |> should.equal(#(1, duration.Month))
+}
+
+pub fn approximate_9_test() {
+  duration.hours(24 * 66)
+  |> duration.approximate
+  |> should.equal(#(2, duration.Month))
+}
+
+pub fn approximate_10_test() {
+  duration.hours(24 * 365)
+  |> duration.approximate
+  |> should.equal(#(11, duration.Month))
+}
+
+pub fn approximate_11_test() {
+  duration.hours(24 * 365 + 5)
+  |> duration.approximate
+  |> should.equal(#(11, duration.Month))
+}
+
+pub fn approximate_12_test() {
+  duration.hours(24 * 365 + 6)
+  |> duration.approximate
+  |> should.equal(#(1, duration.Year))
+}
+
+pub fn approximate_13_test() {
+  duration.hours(5 * 24 * 365 + 6)
+  |> duration.approximate
+  |> should.equal(#(4, duration.Year))
+}
+
+pub fn approximate_14_test() {
+  duration.hours(-5 * 24 * 365 + 6)
+  |> duration.approximate
+  |> should.equal(#(-4, duration.Year))
+}
+
+pub fn approximate_15_test() {
+  duration.milliseconds(1)
+  |> duration.approximate
+  |> should.equal(#(1, duration.Millisecond))
+}
+
+pub fn approximate_16_test() {
+  duration.milliseconds(-1)
+  |> duration.approximate
+  |> should.equal(#(-1, duration.Millisecond))
+}
+
+pub fn approximate_17_test() {
+  duration.milliseconds(999)
+  |> duration.approximate
+  |> should.equal(#(999, duration.Millisecond))
+}
+
+pub fn approximate_18_test() {
+  duration.nanoseconds(1000)
+  |> duration.approximate
+  |> should.equal(#(1, duration.Microsecond))
+}
+
+pub fn approximate_19_test() {
+  duration.nanoseconds(-1000)
+  |> duration.approximate
+  |> should.equal(#(-1, duration.Microsecond))
+}
+
+pub fn approximate_20_test() {
+  duration.nanoseconds(23_000)
+  |> duration.approximate
+  |> should.equal(#(23, duration.Microsecond))
+}
+
+pub fn approximate_21_test() {
+  duration.nanoseconds(999)
+  |> duration.approximate
+  |> should.equal(#(999, duration.Nanosecond))
+}
+
+pub fn approximate_22_test() {
+  duration.nanoseconds(-999)
+  |> duration.approximate
+  |> should.equal(#(-999, duration.Nanosecond))
+}
+
+pub fn approximate_23_test() {
+  duration.nanoseconds(0)
+  |> duration.approximate
+  |> should.equal(#(0, duration.Nanosecond))
+}
