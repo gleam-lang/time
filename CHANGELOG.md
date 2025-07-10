@@ -1,5 +1,10 @@
 # Changelog
 
+## v1.3.0 - 2025-04-20
+
+- The `calendar` module gains the `is_leap_year`, and `is_valid_time_of_day`
+  functions.
+
 ## v1.2.0 - 2025-04-20
 
 - Fixed a bug where the `milliseconds` function could return an incorrect value

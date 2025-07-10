@@ -46,7 +46,7 @@ pub type Date {
   Date(year: Int, month: Month, day: Int)
 }
 
-/// The time of day. Ambiguous without a date and time zone. 
+/// The time of day. Ambiguous without a date and time zone.
 ///
 pub type TimeOfDay {
   TimeOfDay(hours: Int, minutes: Int, seconds: Int, nanoseconds: Int)
@@ -171,4 +171,114 @@ pub fn month_from_int(month: Int) -> Result(Month, Nil) {
     12 -> Ok(December)
     _ -> Error(Nil)
   }
+}
+
+/// Checks if a given day is valid for a given month and year.
+///
+/// This function properly accounts for leap years when validating February days.
+/// A leap year occurs every 4 years, except for years divisible by 100,
+/// unless they are also divisible by 400.
+///
+/// # Examples
+///
+/// ```gleam
+/// is_valid_day(15, of: April, in: 2023)
+/// // -> True
+/// ```
+///
+/// ```gleam
+/// is_valid_day(31, of: April, in: 2023)
+/// // -> False
+/// ```
+///
+/// ```gleam
+/// is_valid_day(29, of: February, in: 2024)
+/// // -> True (2024 is a leap year)
+/// ```
+///
+/// ```gleam
+/// is_valid_day(29, of: February, in: 2023)
+/// // -> False (2023 is not a leap year)
+/// ```
+///
+/// ```gleam
+/// is_valid_day(31, of: December, in: 2023)
+/// // -> True
+/// ```
+pub fn is_valid_date(day: Int, of month: Month, in year: Int) -> Bool {
+  case day < 1 {
+    True -> False
+    False ->
+      case month {
+        January | March | May | July | August | October | December -> day <= 31
+        April | June | September | November -> day <= 30
+        February -> {
+          let max_february_days = case is_leap_year(year) {
+            True -> 29
+            False -> 28
+          }
+          day <= max_february_days
+        }
+      }
+  }
+}
+
+/// Determines if a given year is a leap year.
+///
+/// A leap year occurs every 4 years, except for years divisible by 100,
+/// unless they are also divisible by 400.
+///
+/// # Examples
+///
+/// ```gleam
+/// is_leap_year(2024)
+/// // -> True
+/// ```
+///
+/// ```gleam
+/// is_leap_year(2023)
+/// // -> False
+/// ```
+///
+/// ```gleam
+/// is_leap_year(1900)
+/// // -> False (divisible by 100 but not 400)
+///
+/// is_leap_year(2000)
+/// // -> True (divisible by 400)
+/// ```
+pub fn is_leap_year(year: Int) -> Bool {
+  case year % 400 == 0 {
+    True -> True
+    False ->
+      case year % 100 == 0 {
+        True -> False
+        False -> year % 4 == 0
+      }
+  }
+}
+
+/// Checks if a time of day is valid.
+///
+/// Validates that hours are 0-23, minutes are 0-59, seconds are 0-59,
+/// and nanoseconds are 0-999,999,999.
+///
+/// # Examples
+///
+/// ```gleam
+/// is_valid_time_of_day(TimeOfDay(12, 30, 45, 123456789))
+/// // -> True
+/// ```
+///
+pub fn is_valid_time_of_day(time: TimeOfDay) -> Bool {
+  let TimeOfDay(hours:, minutes:, seconds:, nanoseconds:) = time
+
+  hours >= 0
+  && hours <= 23
+  && minutes >= 0
+  && minutes <= 59
+  && seconds >= 0
+  && seconds <= 59
+  && nanoseconds >= 0
+  && nanoseconds <= 999_999_999
 }
