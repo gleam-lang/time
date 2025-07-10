@@ -196,15 +196,6 @@ pub fn month_from_int(month: Int) -> Result(Month, Nil) {
 /// // -> True (2024 is a leap year)
 /// ```
 ///
-/// ```gleam
-/// is_valid_day(29, of: February, in: 2023)
-/// // -> False (2023 is not a leap year)
-/// ```
-///
-/// ```gleam
-/// is_valid_day(31, of: December, in: 2023)
-/// // -> True
-/// ```
 pub fn is_valid_date(day: Int, of month: Month, in year: Int) -> Bool {
   case day < 1 {
     True -> False
@@ -240,13 +231,6 @@ pub fn is_valid_date(day: Int, of month: Month, in year: Int) -> Bool {
 /// // -> False
 /// ```
 ///
-/// ```gleam
-/// is_leap_year(1900)
-/// // -> False (divisible by 100 but not 400)
-///
-/// is_leap_year(2000)
-/// // -> True (divisible by 400)
-/// ```
 pub fn is_leap_year(year: Int) -> Bool {
   case year % 400 == 0 {
     True -> True

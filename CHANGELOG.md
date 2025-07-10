@@ -1,9 +1,9 @@
 # Changelog
 
-## v1.3.0 - 2025-04-20
+## v1.3.0 - 2025-07-10
 
-- The `calendar` module gains the `is_leap_year`, and `is_valid_time_of_day`
-  functions.
+- The `calendar` module gains the `is_leap_year`, `is_valid_time_of_day` and
+  `is_valid_date` functions.
 
 ## v1.2.0 - 2025-04-20
 
