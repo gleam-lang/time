@@ -173,7 +173,7 @@ pub fn month_from_int(month: Int) -> Result(Month, Nil) {
   }
 }
 
-/// Checks if a given day is valid for a given month and year.
+/// Checks if a given date is valid.
 ///
 /// This function properly accounts for leap years when validating February days.
 /// A leap year occurs every 4 years, except for years divisible by 100,
@@ -182,21 +182,22 @@ pub fn month_from_int(month: Int) -> Result(Month, Nil) {
 /// # Examples
 ///
 /// ```gleam
-/// is_valid_day(15, of: April, in: 2023)
+/// is_valid_date(Date(2023, April, 15))
 /// // -> True
 /// ```
 ///
 /// ```gleam
-/// is_valid_day(31, of: April, in: 2023)
+/// is_valid_date(Date(2023, April, 31))
 /// // -> False
 /// ```
 ///
 /// ```gleam
-/// is_valid_day(29, of: February, in: 2024)
+/// is_valid_date(Date(2024, February, 29))
 /// // -> True (2024 is a leap year)
 /// ```
 ///
-pub fn is_valid_date(day: Int, of month: Month, in year: Int) -> Bool {
+pub fn is_valid_date(date: Date) -> Bool {
+  let Date(year:, month:, day:) = date
   case day < 1 {
     True -> False
     False ->

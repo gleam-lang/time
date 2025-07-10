@@ -23,82 +23,82 @@ pub fn month_to_string_test() {
 }
 
 pub fn is_valid_day_january_test() {
-  assert calendar.is_valid_date(31, of: calendar.January, in: 2023)
-  assert !calendar.is_valid_date(32, of: calendar.January, in: 2023)
-  assert !calendar.is_valid_date(0, of: calendar.January, in: 2023)
+  assert calendar.is_valid_date(calendar.Date(2023, calendar.January, 31))
+  assert !calendar.is_valid_date(calendar.Date(2023, calendar.January, 32))
+  assert !calendar.is_valid_date(calendar.Date(2023, calendar.January, 0))
 }
 
 pub fn is_valid_day_february_test() {
   // Test leap year (2024)
-  assert calendar.is_valid_date(29, of: calendar.February, in: 2024)
-  assert !calendar.is_valid_date(30, of: calendar.February, in: 2024)
+  assert calendar.is_valid_date(calendar.Date(2024, calendar.February, 29))
+  assert !calendar.is_valid_date(calendar.Date(2024, calendar.February, 30))
 
   // Test non-leap year (2023)
-  assert calendar.is_valid_date(28, of: calendar.February, in: 2023)
-  assert !calendar.is_valid_date(29, of: calendar.February, in: 2023)
+  assert calendar.is_valid_date(calendar.Date(2023, calendar.February, 28))
+  assert !calendar.is_valid_date(calendar.Date(2023, calendar.February, 29))
 
   // Test edge cases
-  assert !calendar.is_valid_date(0, of: calendar.February, in: 2023)
+  assert !calendar.is_valid_date(calendar.Date(2023, calendar.February, 0))
 }
 
 pub fn is_valid_day_march_test() {
-  assert calendar.is_valid_date(31, of: calendar.March, in: 2023)
-  assert !calendar.is_valid_date(32, of: calendar.March, in: 2023)
-  assert !calendar.is_valid_date(0, of: calendar.March, in: 2023)
+  assert calendar.is_valid_date(calendar.Date(2023, calendar.March, 31))
+  assert !calendar.is_valid_date(calendar.Date(2023, calendar.March, 32))
+  assert !calendar.is_valid_date(calendar.Date(2023, calendar.March, 0))
 }
 
 pub fn is_valid_day_april_test() {
-  assert calendar.is_valid_date(30, of: calendar.April, in: 2023)
-  assert !calendar.is_valid_date(31, of: calendar.April, in: 2023)
-  assert !calendar.is_valid_date(0, of: calendar.April, in: 2023)
+  assert calendar.is_valid_date(calendar.Date(2023, calendar.April, 30))
+  assert !calendar.is_valid_date(calendar.Date(2023, calendar.April, 31))
+  assert !calendar.is_valid_date(calendar.Date(2023, calendar.April, 0))
 }
 
 pub fn is_valid_day_may_test() {
-  assert calendar.is_valid_date(31, of: calendar.May, in: 2023)
-  assert !calendar.is_valid_date(32, of: calendar.May, in: 2023)
-  assert !calendar.is_valid_date(0, of: calendar.May, in: 2023)
+  assert calendar.is_valid_date(calendar.Date(2023, calendar.May, 31))
+  assert !calendar.is_valid_date(calendar.Date(2023, calendar.May, 32))
+  assert !calendar.is_valid_date(calendar.Date(2023, calendar.May, 0))
 }
 
 pub fn is_valid_day_june_test() {
-  assert calendar.is_valid_date(30, of: calendar.June, in: 2023)
-  assert !calendar.is_valid_date(31, of: calendar.June, in: 2023)
-  assert !calendar.is_valid_date(0, of: calendar.June, in: 2023)
+  assert calendar.is_valid_date(calendar.Date(2023, calendar.June, 30))
+  assert !calendar.is_valid_date(calendar.Date(2023, calendar.June, 31))
+  assert !calendar.is_valid_date(calendar.Date(2023, calendar.June, 0))
 }
 
 pub fn is_valid_day_july_test() {
-  assert calendar.is_valid_date(31, of: calendar.July, in: 2023)
-  assert !calendar.is_valid_date(32, of: calendar.July, in: 2023)
-  assert !calendar.is_valid_date(0, of: calendar.July, in: 2023)
+  assert calendar.is_valid_date(calendar.Date(2023, calendar.July, 31))
+  assert !calendar.is_valid_date(calendar.Date(2023, calendar.July, 32))
+  assert !calendar.is_valid_date(calendar.Date(2023, calendar.July, 0))
 }
 
 pub fn is_valid_day_august_test() {
-  assert calendar.is_valid_date(31, of: calendar.August, in: 2023)
-  assert !calendar.is_valid_date(32, of: calendar.August, in: 2023)
-  assert !calendar.is_valid_date(0, of: calendar.August, in: 2023)
+  assert calendar.is_valid_date(calendar.Date(2023, calendar.August, 31))
+  assert !calendar.is_valid_date(calendar.Date(2023, calendar.August, 32))
+  assert !calendar.is_valid_date(calendar.Date(2023, calendar.August, 0))
 }
 
 pub fn is_valid_day_september_test() {
-  assert calendar.is_valid_date(30, of: calendar.September, in: 2023)
-  assert !calendar.is_valid_date(31, of: calendar.September, in: 2023)
-  assert !calendar.is_valid_date(0, of: calendar.September, in: 2023)
+  assert calendar.is_valid_date(calendar.Date(2023, calendar.September, 30))
+  assert !calendar.is_valid_date(calendar.Date(2023, calendar.September, 31))
+  assert !calendar.is_valid_date(calendar.Date(2023, calendar.September, 0))
 }
 
 pub fn is_valid_day_october_test() {
-  assert calendar.is_valid_date(31, of: calendar.October, in: 2023)
-  assert !calendar.is_valid_date(32, of: calendar.October, in: 2023)
-  assert !calendar.is_valid_date(0, of: calendar.October, in: 2023)
+  assert calendar.is_valid_date(calendar.Date(2023, calendar.October, 31))
+  assert !calendar.is_valid_date(calendar.Date(2023, calendar.October, 32))
+  assert !calendar.is_valid_date(calendar.Date(2023, calendar.October, 0))
 }
 
 pub fn is_valid_day_november_test() {
-  assert calendar.is_valid_date(30, of: calendar.November, in: 2023)
-  assert !calendar.is_valid_date(31, of: calendar.November, in: 2023)
-  assert !calendar.is_valid_date(0, of: calendar.November, in: 2023)
+  assert calendar.is_valid_date(calendar.Date(2023, calendar.November, 30))
+  assert !calendar.is_valid_date(calendar.Date(2023, calendar.November, 31))
+  assert !calendar.is_valid_date(calendar.Date(2023, calendar.November, 0))
 }
 
 pub fn is_valid_day_december_test() {
-  assert calendar.is_valid_date(31, of: calendar.December, in: 2023)
-  assert !calendar.is_valid_date(32, of: calendar.December, in: 2023)
-  assert !calendar.is_valid_date(0, of: calendar.December, in: 2023)
+  assert calendar.is_valid_date(calendar.Date(2023, calendar.December, 31))
+  assert !calendar.is_valid_date(calendar.Date(2023, calendar.December, 32))
+  assert !calendar.is_valid_date(calendar.Date(2023, calendar.December, 0))
 }
 
 pub fn is_leap_year_test() {
