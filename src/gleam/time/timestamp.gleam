@@ -497,8 +497,8 @@ fn do_get_zero_padded_digits(
 ///   RFC 3339 <https://datatracker.ietf.org/doc/html/rfc3339#section-5.6>.
 /// - The `T` and `Z` characters may alternatively be lower case `t` or `z`, 
 ///   respectively.
-/// - Full dates and full times must be separated by `T` or `t`, not any other 
-///   character such as a space (` `).
+/// - Full dates and full times must be separated by `T` or `t`. A space is also 
+///   permitted.
 /// - Leap seconds rules are not considered.  That is, any timestamp may 
 ///   specify digts `00` - `60` for the seconds.
 /// - Any part of a fractional second that cannot be represented in the 
