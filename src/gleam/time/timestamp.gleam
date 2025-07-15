@@ -77,6 +77,9 @@ const byte_t_lowercase: Int = 0x74
 /// The `T` character as a byte
 const byte_t_uppercase: Int = 0x54
 
+/// The `T` character as a byte
+const byte_space: Int = 0x20
+
 /// The Julian seconds of the UNIX epoch (Julian day is 2_440_588)
 const julian_seconds_unix_epoch: Int = 210_866_803_200
 
@@ -742,7 +745,9 @@ fn accept_byte(from bytes: BitArray, value value: Int) -> Result(BitArray, Nil) 
 fn accept_date_time_separator(from bytes: BitArray) -> Result(BitArray, Nil) {
   case bytes {
     <<byte, remaining_bytes:bytes>>
-      if byte == byte_t_uppercase || byte == byte_t_lowercase
+      if byte == byte_t_uppercase
+      || byte == byte_t_lowercase
+      || byte == byte_space
     -> Ok(remaining_bytes)
     _ -> Error(Nil)
   }

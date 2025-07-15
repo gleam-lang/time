@@ -328,6 +328,15 @@ pub fn parse_rfc3339_3_test() {
   |> should.equal(#(60, 550_000_000))
 }
 
+pub fn parse_rfc3339_4_test() {
+  let assert Ok(timestamp) =
+    timestamp.parse_rfc3339("1970-01-01 00:00:00-00:01")
+
+  timestamp
+  |> timestamp.to_unix_seconds_and_nanoseconds
+  |> should.equal(#(60, 0))
+}
+
 pub fn timestamp_rfc3339_string_timestamp_roundtrip_property_test() {
   use timestamp <- qcheck.given(generators.timestamp())
 
@@ -622,7 +631,7 @@ pub fn parse_rfc3339_returns_error_for_bad_timestamp_2_test() {
 }
 
 pub fn parse_rfc3339_returns_error_for_bad_timestamp_3_test() {
-  timestamp.parse_rfc3339("1234-01-01 00:00:00Z")
+  timestamp.parse_rfc3339("1234-01-01 00:00:00ZZ")
   |> should.be_error
 }
 

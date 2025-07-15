@@ -1,5 +1,10 @@
 # Changelog
 
+## v1.4.0 - 2025-07-15
+
+- RFC3339 timestamps with a space between the date and the time can now be
+  parsed.
+
 ## v1.3.0 - 2025-07-10
 
 - The `calendar` module gains the `is_leap_year`, `is_valid_time_of_day` and
