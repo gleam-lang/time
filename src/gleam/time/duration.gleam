@@ -35,7 +35,7 @@ pub type Unit {
   Microsecond
   /// 1000 microseconds.
   Millisecond
-  /// 1000 microseconds.
+  /// 1000 milliseconds.
   Second
   /// 60 seconds.
   Minute
