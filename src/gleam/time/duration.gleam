@@ -259,6 +259,20 @@ pub fn weeks(amount: Int) -> Duration {
   seconds(amount * 60 * 60 * 24 * 7)
 }
 
+/// Create a duration of a number of months.
+pub fn months(amount: Int) -> Duration {
+  int.to_float(amount) *. 60.0 *. 60.0 *. 24.0 *. 7.0 *. 30.437
+  |> float.round()
+  |> seconds()
+}
+
+/// Create a duration of a number of years.
+pub fn years(amount: Int) -> Duration {
+  int.to_float(amount) *. 60.0 *. 60.0 *. 24.0 *. 7.0 *. 30.437 *. 365.25
+  |> float.round()
+  |> seconds()
+}
+
 /// Create a duration of a number of milliseconds.
 pub fn milliseconds(amount: Int) -> Duration {
   let remainder = amount % 1000
