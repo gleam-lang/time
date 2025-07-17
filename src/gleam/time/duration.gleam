@@ -1,6 +1,7 @@
 import gleam/int
 import gleam/order
 import gleam/string
+import gleam/float
 
 /// An amount of time, with up to nanosecond precision.
 ///
@@ -246,6 +247,16 @@ pub fn minutes(amount: Int) -> Duration {
 /// Create a duration of a number of hours.
 pub fn hours(amount: Int) -> Duration {
   seconds(amount * 60 * 60)
+}
+
+/// Create a duration of a number of days.
+pub fn days(amount: Int) -> Duration {
+  seconds(amount * 60 * 60 * 24)
+}
+
+/// Create a duration of a number of weeks.
+pub fn weeks(amount: Int) -> Duration {
+  seconds(amount * 60 * 60 * 24 * 7)
 }
 
 /// Create a duration of a number of milliseconds.
