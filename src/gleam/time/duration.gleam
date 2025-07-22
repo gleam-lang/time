@@ -260,15 +260,19 @@ pub fn weeks(amount: Int) -> Duration {
 }
 
 /// Create a duration of a number of months.
+/// This is calculated based on the approximated 30.4375 days given in the Units
+/// type definition, rounded to the nearest second.
 pub fn months(amount: Int) -> Duration {
-  int.to_float(amount) *. 60.0 *. 60.0 *. 24.0 *. 7.0 *. 30.437
+  int.to_float(amount) *. 60.0 *. 60.0 *. 24.0 *. 30.4375
   |> float.round()
   |> seconds()
 }
 
 /// Create a duration of a number of years.
+/// This is calculated based on the approximated 365.25 days given in the Units
+/// type definition, rounded to the nearest second.
 pub fn years(amount: Int) -> Duration {
-  int.to_float(amount) *. 60.0 *. 60.0 *. 24.0 *. 7.0 *. 30.437 *. 365.25
+  int.to_float(amount) *. 60.0 *. 60.0 *. 24.0 *. 365.25
   |> float.round()
   |> seconds()
 }
