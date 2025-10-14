@@ -32,7 +32,7 @@
 //// as how it works on the BEAM, it is worth reading.
 //// <https://www.erlang.org/doc/apps/erts/time_correction>.
 ////
-//// # Converting to local time
+//// # Converting to local calendar time
 ////
 //// Timestamps don't take into account time zones, so a moment in time will
 //// have the same timestamp value regardless of where you are in the world. To
@@ -491,7 +491,28 @@ fn do_get_zero_padded_digits(
 /// let assert Error(Nil) = timestamp.parse_rfc3339("1995-10-31")
 /// ```
 ///
-/// # Notes
+/// ## Time zones
+///
+/// It may at first seem that the RFC 3339 format includes timezone
+/// information, as it can specify an offset such as `Z` or `+3`, so why does
+/// this function not return calendar time with a time zone? There are multiple
+/// reasons:
+///
+/// - RFC 3339's timestamp format is based on calendar time, but it is
+///   unambigous, so it can be converted into epoch time when being parsed. It
+///   is always better to internally use epoch time to represent unambiguous
+///   points in time, so we perform that conversion as a convenience and to
+///   ensure that programmers with less time experience don't accidentally use
+///   a less suitable time representation.
+///
+/// - RFC 3339's contains _calendar time offset_ information, not time zone
+///   information. This is enough to convert it to an unambiguous timestamp,
+///   but it is not enough information to reliably work with calendar time.
+///   Without the time zone and the time zone database it's not possible to
+///   know what time period that offset is valid for, so it cannot be used
+///   without risk of bugs.
+///
+/// ## Behaviour details
 /// 
 /// - Follows the grammar specified in section 5.6 Internet Date/Time Format of 
 ///   RFC 3339 <https://datatracker.ietf.org/doc/html/rfc3339#section-5.6>.

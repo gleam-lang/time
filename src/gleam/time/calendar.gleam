@@ -3,20 +3,73 @@
 ////
 //// ## When should you use this module?
 ////
-//// The types in this module type are useful when you want to communicate time
-//// to a human reader, but they are not ideal for computers to work with.
-//// Disadvantages of calendar time types include:
+//// > **tldr:** You probably want to use [`gleam/time/timestamp`](./timestamp.html)
+//// > instead!
 ////
-//// - They are ambiguous if you don't know what time-zone they are for.
+//// Calendar time is difficult to work with programmatically, it is the source
+//// of most time-related bugs in software. Compared to _epoch time_, which the
+//// `gleam/time/timestamp` module uses, there are many disadvantages to
+//// calendar time:
+////
+//// - They are ambiguous if you don't know what time-zone is being used.
+////
+//// - A time-zone database is required to understand calendar time even when
+////   you have the time zone. These are large and your program has to
+////   continously be updated as new versions of the database are published.
+////
 //// - The type permits invalid states. e.g. `days` could be set to the number
 ////   32, but this should not be possible!
+////
 //// - There is not a single unique canonical value for each point in time,
 ////   thanks to time zones. Two different `Date` + `TimeOfDay` value pairs
 ////   could represent the same point in time. This means that you can't check
 ////   for time equality with `==` when using calendar types.
 ////
-//// Prefer to represent your time using the `Timestamp` type, and convert it
-//// only to calendar types when you need to display them.
+//// - They are computationally complex, using a more memory to represent and
+////   requiring a lot more CPU time to manipulate.
+////
+//// There are also advantages to calendar time:
+////
+//// - Calendar time is how human's talk about time, so if you want to show a
+////   time or take a time from a human user then calendar time will make it
+////   easier for them.
+////
+//// - They can represent more abstract time periods such as "New Year's Day".
+////   This may seem like an exact window of time at first, but really the
+////   definition of "New Year's Day" is more fuzzy than that. When it starts
+////   and ends will depend where in the world you are, so if you want to refer
+////   to a day as a global concept instead of a fixed window of time for that
+////   day in a specific location, then calendar time can represent that.
+////
+//// So when should you use calendar time? These are our recommendations:
+////
+//// - Default to `gleam/time/timestamp`, which is epoch time. It is
+////   unambiguous, efficient, and significantly less likely to result in logic
+////   bugs.
+////
+//// - When writing time to a database or other data storage use epoch time,
+////   using whatever epoch format it supports. For example, PostgreSQL
+////   `timestamp` and `timestampz` are both epoch time, and `timestamp` is
+////   preferred as it is more straightforward to use as your application is
+////   also using epoch time.
+////
+//// - When communicating with other computer systems continue to use epoch
+////   time. For example, when sending times to another program you could
+////   encode time as UNIX timestamps (seconds since 00:00:00 UTC on 1 January
+////   1970).
+////
+//// - When communicating with humans use epoch time internally, and convert
+////   to-and-from calendar time at the last moment, when iteracting with the
+////   human user. It may also help the users to also show the time as a fuzzy
+////   duration from the present time, such as "about 4 days ago".
+////
+//// - When representing "fuzzy" human time concepts that don't exact periods
+////   in time, such as "one month" (varies depending on which month, which
+////   year, and in which time zone) and "Christmas Day" (varies depending on
+////   which year and time zone) then use calendar time.
+////
+//// Any time you do use calendar time you should be extra careful! It is very
+//// easy to make mistake with. Avoid it where possible.
 ////
 //// ## Time zone offsets
 ////
