@@ -45,6 +45,9 @@ time zone information from the user's web browser or operating system. Server
 side applications may want to embed or downloads a full copy of the time zone
 database and then ask clients which time zone they want to use.
 
+For an entertaining overview of some of the problems of calendar time view this
+video: ["The Problem with Time & Timezones" by Computerphile](https://www.youtube.com/watch?v=-5wpm-gesOY).
+
 ### Which time representation should you use?
 
 > **tldr**: Use `gleam/time/timestamp`.
