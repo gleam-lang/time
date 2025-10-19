@@ -37,7 +37,7 @@ It is important to understand there are two main ways that time is represented:
   likely to result in buggy code.
 
 In this package epoch time is provided by the `gleam/time/timestamp` module,
-and calendar time is provided by the `gleam/time/timestamp` module.
+and calendar time is provided by the `gleam/time/calendar` module.
 
 Time zone information has to be loaded from elsewhere, but which approch is
 best will depend on your application. User interfaces may want to read current
