@@ -107,6 +107,9 @@ pub opaque type Timestamp {
   Timestamp(seconds: Int, nanoseconds: Int)
 }
 
+/// The epoch of Unix time, which is 00:00:00 UTC on 1 January 1970.
+pub const unix_epoch = Timestamp(0, 0)
+
 /// Ensure the time is represented with `nanoseconds` being positive and less
 /// than 1 second.
 ///
