@@ -806,3 +806,8 @@ pub fn calendar_roundtrip_test() {
     timestamp.from_calendar(date, time_of_day, calendar.utc_offset)
   should.equal(timestamp1, timestamp2)
 }
+
+pub fn unix_epoch_test() {
+  timestamp.from_unix_seconds(0)
+  |> should.equal(timestamp.unix_epoch)
+}
