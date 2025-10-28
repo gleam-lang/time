@@ -87,6 +87,8 @@
 //// If you are making an API such as a HTTP JSON API you are encouraged to use
 //// Unix timestamps instead of calendar times.
 
+import gleam/int
+import gleam/order.{type Order}
 import gleam/time/duration
 
 /// The Gregorian calendar date. Ambiguous without a time zone.
@@ -319,4 +321,14 @@ pub fn is_valid_time_of_day(time: TimeOfDay) -> Bool {
   && seconds <= 59
   && nanoseconds >= 0
   && nanoseconds <= 999_999_999
+}
+
+/// Compares two dates, returning an order.
+///
+pub fn naive_date_compare(one: Date, other: Date) -> Order {
+  int.compare(one.year, other.year)
+  |> order.lazy_break_tie(fn() {
+    int.compare(month_to_int(one.month), month_to_int(other.month))
+  })
+  |> order.lazy_break_tie(fn() { int.compare(one.day, other.day) })
 }
