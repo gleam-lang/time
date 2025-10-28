@@ -1,5 +1,9 @@
 # Changelog
 
+## Unreleased
+
+- The `timestamp` module gains the `unix_epoch` constant.
+
 ## v1.5.0 - 2025-11-01
 
 - The `calendar` module gains the `naive_date_compare` function.
