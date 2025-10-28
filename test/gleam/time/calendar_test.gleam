@@ -1,4 +1,5 @@
 import gleam/float
+import gleam/order
 import gleam/time/calendar
 import gleam/time/duration
 import gleeunit/should
@@ -186,4 +187,60 @@ pub fn is_valid_time_of_day_edge_cases_test() {
 
   // Minimum valid values
   assert calendar.is_valid_time_of_day(calendar.TimeOfDay(0, 0, 0, 0))
+}
+
+pub fn compare_date_with_smaller_year_test() {
+  assert order.Lt
+    == calendar.naive_date_compare(
+      calendar.Date(1998, calendar.October, 11),
+      calendar.Date(1999, calendar.October, 11),
+    )
+}
+
+pub fn compares_date_with_smaller_month_test() {
+  assert order.Lt
+    == calendar.naive_date_compare(
+      calendar.Date(1998, calendar.October, 11),
+      calendar.Date(1998, calendar.November, 11),
+    )
+}
+
+pub fn compare_date_with_smaller_day_test() {
+  assert order.Lt
+    == calendar.naive_date_compare(
+      calendar.Date(1998, calendar.October, 11),
+      calendar.Date(1998, calendar.October, 12),
+    )
+}
+
+pub fn compare_equal_dates_test() {
+  assert order.Eq
+    == calendar.naive_date_compare(
+      calendar.Date(1998, calendar.October, 11),
+      calendar.Date(1998, calendar.October, 11),
+    )
+}
+
+pub fn compare_date_with_bigger_year_test() {
+  assert order.Gt
+    == calendar.naive_date_compare(
+      calendar.Date(1999, calendar.October, 11),
+      calendar.Date(1998, calendar.October, 11),
+    )
+}
+
+pub fn compare_date_with_bigger_month_test() {
+  assert order.Gt
+    == calendar.naive_date_compare(
+      calendar.Date(1998, calendar.November, 11),
+      calendar.Date(1998, calendar.October, 11),
+    )
+}
+
+pub fn compare_date_with_bigger_day_test() {
+  assert order.Gt
+    == calendar.naive_date_compare(
+      calendar.Date(1998, calendar.October, 12),
+      calendar.Date(1998, calendar.October, 11),
+    )
 }

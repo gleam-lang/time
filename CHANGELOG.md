@@ -1,5 +1,9 @@
 # Changelog
 
+## Unreleased
+
+- The `calendar` module gains the `naive_date_compare` function.
+
 ## v1.4.0 - 2025-07-15
 
 - RFC3339 timestamps with a space between the date and the time can now be
