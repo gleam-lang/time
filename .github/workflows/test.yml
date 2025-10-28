@@ -10,12 +10,15 @@ on:
 jobs:
   test:
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        otp-version: ["27", "28"]
     steps:
       - uses: actions/checkout@v4
       - uses: erlef/setup-beam@v1
         with:
-          otp-version: "27"
-          gleam-version: "1.11.1"
+          otp-version: ${{ matrix.otp-version }}
+          gleam-version: "1.13.0"
           rebar3-version: "3"
       - run: gleam deps download
       - run: gleam test --target erlang

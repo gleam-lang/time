@@ -13,6 +13,7 @@ rfc3339_to_system_time_in_milliseconds(Timestamp) when is_binary(Timestamp) ->
             {error, nil}
     end.
 
+-if(?OTP_RELEASE < 28).
 % TODO: this time adjustment will need to be removed once the bug is fixed
 % upstream: https://github.com/erlang/otp/issues/9279.
 adjust_system_time(Milliseconds) when is_integer(Milliseconds) ->
@@ -24,3 +25,7 @@ adjust_system_time(Milliseconds) when is_integer(Milliseconds) ->
             Fractional_seconds = Milliseconds rem 1_000,
             Milliseconds - 2 * Fractional_seconds
     end.
+-else.
+% On OTP 28 the bug has been fixed, so there's no adjusting to be done.
+adjust_system_time(Milliseconds) -> Milliseconds.
+-endif.
