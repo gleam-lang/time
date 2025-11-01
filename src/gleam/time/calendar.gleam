@@ -323,7 +323,19 @@ pub fn is_valid_time_of_day(time: TimeOfDay) -> Bool {
   && nanoseconds <= 999_999_999
 }
 
-/// Compares two dates, returning an order.
+/// Naively compares two dates without any time zone information, returning an
+/// order.
+///
+/// ## Correctness
+///
+/// This function compares dates without any time zone information, only using
+/// the rules for the gregorian calendar. This is typically sufficient, but be
+/// aware that in reality some time zones will change their calendar date
+/// occasionally. This can result in days being skipped, out of order, or
+/// happening multiple times.
+///
+/// If you need real-world correct time ordering then use the
+/// `gleam/time/timestamp` module instead.
 ///
 pub fn naive_date_compare(one: Date, other: Date) -> Order {
   int.compare(one.year, other.year)
