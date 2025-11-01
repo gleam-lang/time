@@ -1,5 +1,5 @@
 name = "gleam_time"
-version = "1.4.0"
+version = "1.5.0"
 description = "Work with time in Gleam!"
 gleam = ">= 1.11.0"
 licences = ["Apache-2.0"]
