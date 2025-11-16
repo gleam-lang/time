@@ -223,6 +223,36 @@ pub fn compare_7_test() {
   |> should.equal(order.Eq)
 }
 
+pub fn to_iso8601_string_0_nanoseconds_test() {
+  duration.nanoseconds(0)
+  |> duration.to_iso8601_string
+  |> should.equal("PT0S")
+}
+
+pub fn to_iso8601_string_0_milliseconds_test() {
+  duration.milliseconds(0)
+  |> duration.to_iso8601_string
+  |> should.equal("PT0S")
+}
+
+pub fn to_iso8601_string_0_seconds_test() {
+  duration.seconds(0)
+  |> duration.to_iso8601_string
+  |> should.equal("PT0S")
+}
+
+pub fn to_iso8601_string_0_minutes_test() {
+  duration.minutes(0)
+  |> duration.to_iso8601_string
+  |> should.equal("PT0S")
+}
+
+pub fn to_iso8601_string_0_hours_test() {
+  duration.hours(0)
+  |> duration.to_iso8601_string
+  |> should.equal("PT0S")
+}
+
 pub fn to_iso8601_string_0_test() {
   duration.seconds(42)
   |> duration.to_iso8601_string

@@ -210,10 +210,11 @@ pub fn to_iso8601_string(duration: Duration) -> String {
     |> string.append("T")
     |> add(hours, "H")
     |> add(minutes, "M")
-  case seconds, duration.nanoseconds {
-    0, 0 -> output
-    _, 0 -> output <> int.to_string(seconds) <> "S"
-    _, _ -> {
+  case output, seconds, duration.nanoseconds {
+    "PT", 0, 0 -> output <> "0S"
+    _, 0, 0 -> output
+    _, _, 0 -> output <> int.to_string(seconds) <> "S"
+    _, _, _ -> {
       let f = nanosecond_digits(duration.nanoseconds, 0, "")
       output <> int.to_string(seconds) <> "." <> f <> "S"
     }

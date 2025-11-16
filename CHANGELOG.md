@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- Fixed a bug where the `duration.to_iso8601_string` returned an invalid value
+  for a duration of `0` seconds.
 - The `timestamp` module gains the `unix_epoch` constant.
 
 ## v1.5.0 - 2025-11-01
