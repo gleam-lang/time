@@ -1,3 +1,4 @@
+import gleam/bool
 import gleam/int
 import gleam/order
 import gleam/string
@@ -189,6 +190,7 @@ pub fn add(left: Duration, right: Duration) -> Duration {
 /// [1]: https://en.wikipedia.org/wiki/ISO_8601#Durations
 ///
 pub fn to_iso8601_string(duration: Duration) -> String {
+  use <- bool.guard(duration == empty, "PT0S")
   let split = fn(total, limit) {
     let amount = total % limit
     let remainder = { total - amount } / limit
@@ -210,11 +212,10 @@ pub fn to_iso8601_string(duration: Duration) -> String {
     |> string.append("T")
     |> add(hours, "H")
     |> add(minutes, "M")
-  case output, seconds, duration.nanoseconds {
-    "PT", 0, 0 -> output <> "0S"
-    _, 0, 0 -> output
-    _, _, 0 -> output <> int.to_string(seconds) <> "S"
-    _, _, _ -> {
+  case seconds, duration.nanoseconds {
+    0, 0 -> output
+    _, 0 -> output <> int.to_string(seconds) <> "S"
+    _, _ -> {
       let f = nanosecond_digits(duration.nanoseconds, 0, "")
       output <> int.to_string(seconds) <> "." <> f <> "S"
     }

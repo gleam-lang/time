@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## v1.6.0 - 2025-11-18
 
 - Fixed a bug where the `duration.to_iso8601_string` returned an invalid value
   for a duration of `0` seconds.
