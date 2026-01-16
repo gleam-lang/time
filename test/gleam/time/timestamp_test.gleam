@@ -153,11 +153,11 @@ pub fn system_time_0_test() {
 
   // This test will start to fail once enough time has passed.
   // When that happens please update these values.
-  let when_this_test_was_last_updated = 1_735_307_287
-  let christmas_day_2025 = 1_766_620_800
+  let when_this_test_was_last_updated = 1_768_565_586
+  let christmas_day_2027 = 1_829_692_800
 
   let assert True = now > when_this_test_was_last_updated
-  let assert True = now < christmas_day_2025
+  let assert True = now < christmas_day_2027
 }
 
 pub fn to_rfc3339_0_test() {
