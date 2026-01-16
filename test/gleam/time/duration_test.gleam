@@ -90,6 +90,37 @@ pub fn to_seconds_and_nanoseconds_1_test() {
   |> should.equal(#(0, 1_000_000))
 }
 
+pub fn to_milliseconds_0_test() {
+  duration.seconds(1)
+  |> duration.to_milliseconds()
+  |> should.equal(1000)
+}
+
+pub fn to_milliseconds_1_test() {
+  duration.milliseconds(500)
+  |> duration.to_milliseconds()
+  |> should.equal(500)
+}
+
+pub fn to_milliseconds_2_test() {
+  duration.seconds(1)
+  |> duration.add(duration.milliseconds(500))
+  |> duration.to_milliseconds()
+  |> should.equal(1500)
+}
+
+pub fn to_milliseconds_3_test() {
+  duration.milliseconds(-500)
+  |> duration.to_milliseconds()
+  |> should.equal(-500)
+}
+
+pub fn to_milliseconds_4_test() {
+  duration.nanoseconds(1_500_000)
+  |> duration.to_milliseconds()
+  |> should.equal(1)
+}
+
 pub fn to_seconds_0_test() {
   duration.seconds(1)
   |> duration.to_seconds

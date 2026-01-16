@@ -293,5 +293,16 @@ pub fn to_seconds_and_nanoseconds(duration: Duration) -> #(Int, Int) {
   #(duration.seconds, duration.nanoseconds)
 }
 
+/// Convert the duration to a number of milliseconds.
+///
+/// This conversion truncates any sub-millisecond precision. If you need
+/// the full precision, use `to_seconds_and_nanoseconds` instead.
+///
+pub fn to_milliseconds(duration: Duration) -> Int {
+  let seconds_ms = duration.seconds * 1000
+  let nanos_ms = duration.nanoseconds / 1_000_000
+  seconds_ms + nanos_ms
+}
+
 @internal
 pub const empty = Duration(0, 0)
