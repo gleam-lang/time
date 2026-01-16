@@ -1,5 +1,9 @@
 # Changelog
 
+## Unreleased
+
+- The `duration` module gains the `to_milliseconds` function.
+
 ## v1.6.0 - 2025-11-18
 
 - Fixed a bug where the `duration.to_iso8601_string` returned an invalid value
