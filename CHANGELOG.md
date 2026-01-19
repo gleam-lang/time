@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## v1.7.0 - 2026-01-19
 
 - The `duration` module gains the `to_milliseconds` function.
 
