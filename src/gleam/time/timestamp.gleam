@@ -185,11 +185,18 @@ pub fn difference(left: Timestamp, right: Timestamp) -> Duration {
 
 /// Add a duration to a timestamp.
 ///
+/// You can add a negative duration to substract from a timestamp.
+///
 /// # Examples
 ///
 /// ```gleam
 /// add(from_unix_seconds(1000), duration.seconds(5))
 /// // -> from_unix_seconds(1005)
+/// ```
+///
+/// ```gleam
+/// add(from_unix_seconds(1000), duration.seconds(-5))
+/// // -> from_unix_seconds(995)
 /// ```
 ///
 pub fn add(timestamp: Timestamp, duration: Duration) -> Timestamp {
