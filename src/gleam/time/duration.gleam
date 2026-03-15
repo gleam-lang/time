@@ -104,7 +104,7 @@ pub fn approximate(duration: Duration) -> #(Int, Unit) {
 /// Ensure the duration is represented with `nanoseconds` being positive and
 /// less than 1 second.
 ///
-/// This function does not change the amount of time that the duratoin refers
+/// This function does not change the amount of time that the duration refers
 /// to, it only adjusts the values used to represent the time.
 ///
 fn normalise(duration: Duration) -> Duration {
