@@ -1,8 +1,11 @@
 -module(gleam_time_ffi).
--export([system_time/0, local_time_offset_seconds/0]).
+-export([system_time/0, monotonic_time/0, local_time_offset_seconds/0]).
 
 system_time() ->
     {0, erlang:system_time(nanosecond)}.
+
+monotonic_time() ->
+    {0, erlang:monotonic_time(nanosecond)}.
 
 local_time_offset_seconds() ->
     Utc = calendar:universal_time(),
