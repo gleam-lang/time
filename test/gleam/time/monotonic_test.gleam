@@ -3,8 +3,8 @@ import gleam/time/duration
 import gleam/time/monotonic
 
 fn is_not_negative(d: duration.Duration) -> Bool {
-  let #(seconds, _nanoseconds) = duration.to_seconds_and_nanoseconds(d)
-  seconds >= 0
+  let #(seconds, nanoseconds) = duration.to_seconds_and_nanoseconds(d)
+  seconds > 0 || { seconds == 0 && nanoseconds >= 0 }
 }
 
 pub fn now_can_be_compared_test() {
