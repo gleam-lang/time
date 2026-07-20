@@ -279,6 +279,60 @@ pub fn to_rfc3339(timestamp: Timestamp, offset: Duration) -> String {
   }
 }
 
+/// Convert a timestamp to an [HTTP-date formatted time string][spec].
+///
+/// [spec]: https://datatracker.ietf.org/doc/html/rfc9110#section-5.6.7
+///
+/// The result uses the IMF-fixdate format in GMT. HTTP dates have one-second
+/// precision, so nanoseconds are discarded.
+///
+/// # Examples
+///
+/// ```gleam
+/// timestamp.from_unix_seconds(0)
+/// |> timestamp.to_http_date
+/// // -> "Thu, 01 Jan 1970 00:00:00 GMT"
+/// ```
+///
+pub fn to_http_date(timestamp: Timestamp) -> String {
+  let #(date, time) = to_calendar(timestamp, calendar.utc_offset)
+  let days_since_epoch =
+    floored_div(timestamp.seconds, int.to_float(seconds_per_day))
+  let weekday = modulo(days_since_epoch, 7)
+
+  let n2 = pad_digit(_, to: 2)
+  let n4 = pad_digit(_, to: 4)
+  let out = weekday_to_http_string(weekday) <> ", "
+  let out =
+    out
+    <> n2(date.day)
+    <> " "
+    <> month_to_http_string(date.month)
+    <> " "
+    <> n4(date.year)
+  let out = out <> " "
+  let out =
+    out <> n2(time.hours) <> ":" <> n2(time.minutes) <> ":" <> n2(time.seconds)
+  out <> " GMT"
+}
+
+fn weekday_to_http_string(weekday: Int) -> String {
+  // The Unix epoch began on a Thursday, so Thursday is weekday zero.
+  case weekday {
+    0 -> "Thu"
+    1 -> "Fri"
+    2 -> "Sat"
+    3 -> "Sun"
+    4 -> "Mon"
+    5 -> "Tue"
+    _ -> "Wed"
+  }
+}
+
+fn month_to_http_string(month: calendar.Month) -> String {
+  string.slice(calendar.month_to_string(month), at_index: 0, length: 3)
+}
+
 fn pad_digit(digit: Int, to desired_length: Int) -> String {
   int.to_string(digit) |> string.pad_start(desired_length, "0")
 }
@@ -588,6 +642,199 @@ pub fn parse_rfc3339(input: String) -> Result(Timestamp, Nil) {
     second_fraction_as_nanoseconds:,
     offset_seconds:,
   ))
+}
+
+/// Parses an [HTTP-date formatted time string][spec] into a `Timestamp`.
+///
+/// [spec]: https://datatracker.ietf.org/doc/html/rfc9110#section-5.6.7
+///
+/// # Examples
+///
+/// ```gleam
+/// let assert Ok(ts) =
+///   timestamp.parse_http_date("Fri, 27 Dec 2024 14:24:27 GMT")
+/// timestamp.to_unix_seconds_and_nanoseconds(ts)
+/// // -> #(1_735_309_467, 0)
+/// ```
+///
+/// Along with the IMF-fixdate format, the obsolete RFC 850 and ANSI C
+/// `asctime` formats are accepted.
+///
+/// Parsing an invalid HTTP date returns an error.
+///
+/// ```gleam
+/// let assert Error(Nil) = timestamp.parse_http_date("not a date")
+/// ```
+///
+pub fn parse_http_date(input: String) -> Result(Timestamp, Nil) {
+  case input {
+    "Monday, " <> input
+    | "Tuesday, " <> input
+    | "Wednesday, " <> input
+    | "Thursday, " <> input
+    | "Friday, " <> input
+    | "Saturday, " <> input
+    | "Sunday, " <> input -> parse_rfc850_date(input)
+    "Mon" <> input
+    | "Tue" <> input
+    | "Wed" <> input
+    | "Thu" <> input
+    | "Fri" <> input
+    | "Sat" <> input
+    | "Sun" <> input ->
+      case input {
+        ", " <> input -> parse_imf_fixdate(input)
+        " " <> input -> parse_asctime_date(input)
+        _ -> Error(Nil)
+      }
+    _ -> Error(Nil)
+  }
+}
+
+fn build_timestamp(
+  date: calendar.Date,
+  time: calendar.TimeOfDay,
+) -> Result(Timestamp, Nil) {
+  case calendar.is_valid_date(date) {
+    False -> Error(Nil)
+    True -> Ok(from_calendar(date:, time:, offset: calendar.utc_offset))
+  }
+}
+
+/// Sun, 06 Nov 1994 08:49:37 GMT
+fn parse_imf_fixdate(input: String) -> Result(Timestamp, Nil) {
+  let bytes = bit_array.from_string(input)
+
+  // Date
+  use #(day, bytes) <- result.try(parse_digits(from: bytes, count: 2))
+  use bytes <- result.try(accept_byte(from: bytes, value: byte_space))
+  use #(month, bytes) <- result.try(parse_http_month(from: bytes))
+  use bytes <- result.try(accept_byte(from: bytes, value: byte_space))
+  use #(year, bytes) <- result.try(parse_digits(from: bytes, count: 4))
+  use bytes <- result.try(accept_byte(from: bytes, value: byte_space))
+
+  // Time
+  use #(time, bytes) <- result.try(parse_time_without_nanoseconds(from: bytes))
+
+  use bytes <- result.try(accept_gmt_literal(from: bytes))
+  use Nil <- result.try(accept_empty(bytes))
+
+  build_timestamp(calendar.Date(year:, month:, day:), time)
+}
+
+/// Sunday, 06-Nov-94 08:49:37 GMT
+fn parse_rfc850_date(input: String) -> Result(Timestamp, Nil) {
+  let bytes = bit_array.from_string(input)
+
+  // Date
+  use #(day, bytes) <- result.try(parse_digits(from: bytes, count: 2))
+  use bytes <- result.try(accept_byte(from: bytes, value: byte_minus))
+  use #(month, bytes) <- result.try(parse_http_month(from: bytes))
+  use bytes <- result.try(accept_byte(from: bytes, value: byte_minus))
+  use #(year, bytes) <- result.try(parse_digits(from: bytes, count: 2))
+  use bytes <- result.try(accept_byte(from: bytes, value: byte_space))
+
+  // Time
+  use #(time, bytes) <- result.try(parse_time_without_nanoseconds(from: bytes))
+
+  use bytes <- result.try(accept_gmt_literal(from: bytes))
+  use Nil <- result.try(accept_empty(bytes))
+
+  let date = calendar.Date(year: expand_rfc850_year(year), month:, day:)
+  build_timestamp(date, time)
+}
+
+/// Sun Nov  6 08:49:37 1994
+fn parse_asctime_date(input: String) -> Result(Timestamp, Nil) {
+  let bytes = bit_array.from_string(input)
+
+  // Date
+  use #(month, bytes) <- result.try(parse_http_month(from: bytes))
+  use bytes <- result.try(accept_byte(from: bytes, value: byte_space))
+  use #(day, bytes) <- result.try(parse_asctime_day(from: bytes))
+  use bytes <- result.try(accept_byte(from: bytes, value: byte_space))
+
+  // Time
+  use #(time, bytes) <- result.try(parse_time_without_nanoseconds(from: bytes))
+  use bytes <- result.try(accept_byte(from: bytes, value: byte_space))
+
+  // Year
+  use #(year, bytes) <- result.try(parse_digits(from: bytes, count: 4))
+
+  use Nil <- result.try(accept_empty(bytes))
+
+  build_timestamp(calendar.Date(year:, month:, day:), time)
+}
+
+fn parse_asctime_day(from bytes: BitArray) -> Result(#(Int, BitArray), Nil) {
+  case bytes {
+    <<byte, bytes:bytes>> if byte == byte_space ->
+      parse_digits(from: bytes, count: 1)
+    _ -> parse_digits(from: bytes, count: 2)
+  }
+}
+
+fn parse_http_month(
+  from bytes: BitArray,
+) -> Result(#(calendar.Month, BitArray), Nil) {
+  case bytes {
+    <<"Jan", bytes:bytes>> -> Ok(#(calendar.January, bytes))
+    <<"Feb", bytes:bytes>> -> Ok(#(calendar.February, bytes))
+    <<"Mar", bytes:bytes>> -> Ok(#(calendar.March, bytes))
+    <<"Apr", bytes:bytes>> -> Ok(#(calendar.April, bytes))
+    <<"May", bytes:bytes>> -> Ok(#(calendar.May, bytes))
+    <<"Jun", bytes:bytes>> -> Ok(#(calendar.June, bytes))
+    <<"Jul", bytes:bytes>> -> Ok(#(calendar.July, bytes))
+    <<"Aug", bytes:bytes>> -> Ok(#(calendar.August, bytes))
+    <<"Sep", bytes:bytes>> -> Ok(#(calendar.September, bytes))
+    <<"Oct", bytes:bytes>> -> Ok(#(calendar.October, bytes))
+    <<"Nov", bytes:bytes>> -> Ok(#(calendar.November, bytes))
+    <<"Dec", bytes:bytes>> -> Ok(#(calendar.December, bytes))
+    _ -> Error(Nil)
+  }
+}
+
+fn parse_time_without_nanoseconds(
+  from bytes: BitArray,
+) -> Result(#(calendar.TimeOfDay, BitArray), Nil) {
+  use #(hours, bytes) <- result.try(parse_hours(from: bytes))
+  use bytes <- result.try(accept_byte(from: bytes, value: byte_colon))
+  use #(minutes, bytes) <- result.try(parse_minutes(from: bytes))
+  use bytes <- result.try(accept_byte(from: bytes, value: byte_colon))
+  use #(seconds, bytes) <- result.try(parse_seconds(from: bytes))
+  let time = calendar.TimeOfDay(hours:, minutes:, seconds:, nanoseconds: 0)
+  Ok(#(time, bytes))
+}
+
+fn accept_gmt_literal(from bytes: BitArray) -> Result(BitArray, Nil) {
+  case bytes {
+    <<" GMT", bytes:bytes>> -> Ok(bytes)
+    _ -> Error(Nil)
+  }
+}
+
+/// Recipients of a timestamp value in rfc850-date format, which uses a
+/// two-digit year, MUST interpret a timestamp that appears to be more than 50
+/// years in the future as representing the most recent year in the past that
+/// had the same last two digits.
+fn expand_rfc850_year(year: Int) -> Int {
+  let #(calendar.Date(year: current_year, ..), _) =
+    system_time() |> to_calendar(calendar.utc_offset)
+  expand_rfc850_year_relative_to(year:, current_year:)
+}
+
+@internal
+pub fn expand_rfc850_year_relative_to(
+  year year: Int,
+  current_year current_year: Int,
+) -> Int {
+  let century = current_year - modulo(current_year, 100)
+  let candidate = century + year
+  case candidate {
+    candidate if candidate < current_year - 49 -> candidate + 100
+    candidate if candidate > current_year + 50 -> candidate - 100
+    candidate -> candidate
+  }
 }
 
 fn parse_year(from bytes: BitArray) -> Result(#(Int, BitArray), Nil) {
