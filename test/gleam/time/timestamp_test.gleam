@@ -881,3 +881,215 @@ pub fn calendar_roundtrip_test() {
 pub fn unix_epoch_test() {
   assert timestamp.from_unix_seconds(0) == timestamp.unix_epoch
 }
+
+pub fn to_http_date_0_test() {
+  assert timestamp.to_http_date(timestamp.from_unix_seconds(0))
+    == "Thu, 01 Jan 1970 00:00:00 GMT"
+}
+
+pub fn to_http_date_1_test() {
+  let december_27_2024 = timestamp.from_unix_seconds(1_735_309_467)
+
+  assert timestamp.to_http_date(december_27_2024)
+    == "Fri, 27 Dec 2024 14:24:27 GMT"
+}
+
+pub fn to_http_date_2_test() {
+  let two_days_after_epoch =
+    timestamp.add(timestamp.unix_epoch, duration.hours(24 * 2))
+
+  assert timestamp.to_http_date(two_days_after_epoch)
+    == "Sat, 03 Jan 1970 00:00:00 GMT"
+}
+
+pub fn to_http_date_3_test() {
+  let three_days_after_epoch =
+    timestamp.add(timestamp.unix_epoch, duration.hours(24 * 3))
+
+  assert timestamp.to_http_date(three_days_after_epoch)
+    == "Sun, 04 Jan 1970 00:00:00 GMT"
+}
+
+pub fn to_http_date_4_test() {
+  let four_days_after_epoch =
+    timestamp.add(timestamp.unix_epoch, duration.hours(24 * 4))
+
+  assert timestamp.to_http_date(four_days_after_epoch)
+    == "Mon, 05 Jan 1970 00:00:00 GMT"
+}
+
+pub fn to_http_date_5_test() {
+  let five_days_after_epoch =
+    timestamp.add(timestamp.unix_epoch, duration.hours(24 * 5))
+
+  assert timestamp.to_http_date(five_days_after_epoch)
+    == "Tue, 06 Jan 1970 00:00:00 GMT"
+}
+
+pub fn to_http_date_6_test() {
+  let six_days_after_epoch =
+    timestamp.add(timestamp.unix_epoch, duration.hours(24 * 6))
+
+  assert timestamp.to_http_date(six_days_after_epoch)
+    == "Wed, 07 Jan 1970 00:00:00 GMT"
+}
+
+pub fn to_http_date_discards_nanoseconds_test() {
+  let almost_one_second_after_epoch =
+    timestamp.from_unix_seconds_and_nanoseconds(0, 999_999_999)
+
+  assert timestamp.to_http_date(almost_one_second_after_epoch)
+    == "Thu, 01 Jan 1970 00:00:00 GMT"
+}
+
+pub fn parse_http_date_imf_fixdate_test() {
+  let december_27_2024 = timestamp.from_unix_seconds(1_735_309_467)
+
+  assert timestamp.parse_http_date("Fri, 27 Dec 2024 14:24:27 GMT")
+    == Ok(december_27_2024)
+}
+
+pub fn parse_http_date_rfc850_test() {
+  let december_27_2024 = timestamp.from_unix_seconds(1_735_309_467)
+
+  assert timestamp.parse_http_date("Friday, 27-Dec-24 14:24:27 GMT")
+    == Ok(december_27_2024)
+}
+
+pub fn parse_http_date_asctime_test() {
+  let december_27_2024 = timestamp.from_unix_seconds(1_735_309_467)
+
+  assert timestamp.parse_http_date("Fri Dec 27 14:24:27 2024")
+    == Ok(december_27_2024)
+}
+
+pub fn parse_http_date_asctime_space_padded_day_test() {
+  let expected =
+    timestamp.from_calendar(
+      Date(2024, calendar.December, 7),
+      TimeOfDay(14, 24, 27, 0),
+      calendar.utc_offset,
+    )
+
+  assert timestamp.parse_http_date("Sat Dec  7 14:24:27 2024") == Ok(expected)
+}
+
+pub fn parse_http_date_ignores_mismatched_weekday_test() {
+  let expected =
+    timestamp.from_calendar(
+      Date(2026, calendar.July, 17),
+      TimeOfDay(1, 23, 45, 0),
+      calendar.utc_offset,
+    )
+  assert timestamp.parse_http_date("Mon, 17 Jul 2026 01:23:45 GMT")
+    == Ok(expected)
+}
+
+pub fn parse_http_date_accepts_leap_second_test() {
+  let assert Ok(value) =
+    timestamp.parse_http_date("Sat, 31 Dec 2016 23:59:60 GMT")
+
+  let expected =
+    timestamp.from_calendar(
+      Date(2017, January, 1),
+      TimeOfDay(0, 0, 0, 0),
+      calendar.utc_offset,
+    )
+  assert value == expected
+}
+
+pub fn expand_rfc850_year_window_test() {
+  assert timestamp.expand_rfc850_year_relative_to(year: 25, current_year: 2000)
+    == 2025
+  assert timestamp.expand_rfc850_year_relative_to(year: 50, current_year: 2000)
+    == 2050
+  assert timestamp.expand_rfc850_year_relative_to(year: 51, current_year: 2000)
+    == 1951
+  assert timestamp.expand_rfc850_year_relative_to(year: 0, current_year: 2099)
+    == 2100
+}
+
+pub fn parse_http_date_returns_error_for_bad_timestamp_0_test() {
+  assert timestamp.parse_http_date("RandomString, 17 Jul 2026 01:23:45 GMT")
+    == Error(Nil)
+}
+
+pub fn parse_http_date_returns_error_for_bad_timestamp_1_test() {
+  assert timestamp.parse_http_date("Funday, 17-Jul-26 01:23:45 GMT")
+    == Error(Nil)
+}
+
+pub fn parse_http_date_returns_error_for_bad_timestamp_2_test() {
+  assert timestamp.parse_http_date("Bad Jul 17 01:23:45 2026") == Error(Nil)
+}
+
+pub fn parse_http_date_returns_error_for_bad_timestamp_3_test() {
+  assert timestamp.parse_http_date("Wed, 30 Feb 2026 00:00:00 GMT")
+    == Error(Nil)
+}
+
+pub fn parse_http_date_returns_error_for_bad_timestamp_4_test() {
+  assert timestamp.parse_http_date("Mon, 29 Jun 2026 24:00:00 GMT")
+    == Error(Nil)
+}
+
+pub fn parse_http_date_returns_error_for_bad_timestamp_5_test() {
+  assert timestamp.parse_http_date("Mon, 29 Jun 2026 23:60:00 GMT")
+    == Error(Nil)
+}
+
+pub fn parse_http_date_returns_error_for_bad_timestamp_6_test() {
+  assert timestamp.parse_http_date("Mon, 29 Jun 2026 23:59:61 GMT")
+    == Error(Nil)
+}
+
+pub fn parse_http_date_returns_error_for_bad_timestamp_7_test() {
+  assert timestamp.parse_http_date("Mon, 29 Jun 2026 01:49:08 UTC")
+    == Error(Nil)
+}
+
+pub fn parse_http_date_returns_error_for_bad_timestamp_8_test() {
+  assert timestamp.parse_http_date("Mon, 29 Jun 2026 01:49:08 GMT trailing")
+    == Error(Nil)
+}
+
+pub fn parse_http_date_returns_error_for_bad_timestamp_9_test() {
+  assert timestamp.parse_http_date("Mon, 9 Jun 2026 01:49:08 GMT") == Error(Nil)
+}
+
+pub fn parse_http_date_returns_error_for_bad_timestamp_10_test() {
+  assert timestamp.parse_http_date("Mon, 29 jun 2026 01:49:08 GMT")
+    == Error(Nil)
+}
+
+pub fn parse_http_date_returns_error_for_bad_timestamp_11_test() {
+  assert timestamp.parse_http_date("Mon, 29-Jun-2026 01:49:08 GMT")
+    == Error(Nil)
+}
+
+pub fn parse_http_date_returns_error_for_bad_timestamp_12_test() {
+  assert timestamp.parse_http_date("Monday, 06 Nov 1994 08:49:37 GMT")
+    == Error(Nil)
+}
+
+pub fn parse_http_date_returns_error_for_bad_timestamp_13_test() {
+  assert timestamp.parse_http_date("Mon, 06-Nov-94 08:49:37 GMT") == Error(Nil)
+}
+
+pub fn parse_http_date_returns_error_for_bad_timestamp_14_test() {
+  assert timestamp.parse_http_date("Monday Nov  6 08:49:37 1994") == Error(Nil)
+}
+
+pub fn timestamp_http_date_string_timestamp_roundtrip_property_test() {
+  use original_timestamp <- qcheck.given(generators.timestamp())
+  let #(seconds, _) =
+    timestamp.to_unix_seconds_and_nanoseconds(original_timestamp)
+  let original_timestamp = timestamp.from_unix_seconds(seconds)
+
+  let assert Ok(parsed_timestamp) =
+    original_timestamp
+    |> timestamp.to_http_date
+    |> timestamp.parse_http_date
+
+  assert original_timestamp == parsed_timestamp
+}

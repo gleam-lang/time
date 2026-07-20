@@ -1,5 +1,10 @@
 # Changelog
 
+## Unreleased
+
+- The `timestamp` module gains the `to_http_date` and `parse_http_date`
+  functions.
+
 ## v1.8.0 - 2026-03-26
 
 - The `timestamp` module gains the `subtract` function.
