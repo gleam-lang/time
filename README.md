@@ -70,7 +70,7 @@ The longer, more detailed answer:
   1970).
 
 - When communicating with humans use epoch time internally, and convert
-  to-and-from calendar time at the last moment, when iteracting with the
+  to-and-from calendar time at the last moment, when interacting with the
   human user. It may also help the users to also show the time as a fuzzy
   duration from the present time, such as "about 4 days ago".
 
