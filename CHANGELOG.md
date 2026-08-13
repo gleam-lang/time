@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## v1.9.0 - 2026-08-13
 
 - The `timestamp` module gains the `to_http_date` and `parse_http_date`
   functions.
