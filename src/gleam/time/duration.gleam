@@ -180,6 +180,20 @@ pub fn add(left: Duration, right: Duration) -> Duration {
   |> normalise
 }
 
+/// Subtract one durations from another.
+///
+/// # Examples
+///
+/// ```gleam
+/// subtract(seconds(5), seconds(1))
+/// // -> seconds(4)
+/// ```
+///
+pub fn subtract(left: Duration, right: Duration) -> Duration {
+  Duration(left.seconds - right.seconds, left.nanoseconds - right.nanoseconds)
+  |> normalise
+}
+
 /// Convert the duration to an [ISO8601][1] formatted duration string.
 ///
 /// The ISO8601 duration format is ambiguous without context due to months and

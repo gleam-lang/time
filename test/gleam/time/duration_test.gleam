@@ -83,6 +83,75 @@ pub fn add_8_test() {
     == duration.nanoseconds(-999_999_999)
 }
 
+pub fn subtract_0_test() {
+  assert duration.subtract(
+      duration.nanoseconds(500_000_000),
+      duration.nanoseconds(500_000_000),
+    )
+    == duration.seconds(0)
+}
+
+pub fn subtract_1_test() {
+  assert duration.subtract(
+      duration.nanoseconds(-500_000_000),
+      duration.nanoseconds(-500_000_000),
+    )
+    == duration.seconds(0)
+}
+
+pub fn subtract_2_test() {
+  assert duration.subtract(
+      duration.nanoseconds(-500_000_000),
+      duration.nanoseconds(500_000_000),
+    )
+    == duration.seconds(-1)
+}
+
+pub fn subtract_3_test() {
+  assert duration.subtract(
+      duration.seconds(8),
+      duration.nanoseconds(4_000_000_000),
+    )
+    == duration.seconds(4)
+}
+
+pub fn subtract_4_test() {
+  assert duration.subtract(
+      duration.seconds(4),
+      duration.nanoseconds(5_000_000_000),
+    )
+    == duration.seconds(-1)
+}
+
+pub fn subtract_5_test() {
+  assert duration.subtract(
+      duration.nanoseconds(-4_000_000),
+      duration.milliseconds(4),
+    )
+    == duration.milliseconds(-8)
+}
+
+pub fn subtract_6_test() {
+  assert duration.subtract(duration.nanoseconds(2), duration.nanoseconds(3))
+    == duration.nanoseconds(-1)
+}
+
+pub fn subtract_7_test() {
+  assert duration.subtract(
+      duration.nanoseconds(-1_000_000_000),
+      duration.nanoseconds(1),
+    )
+    == duration.nanoseconds(-1_000_000_001)
+}
+
+pub fn subtract_8_test() {
+  assert duration.subtract(
+      duration.nanoseconds(1_000_000_000),
+      duration.nanoseconds(1),
+    )
+    == duration.nanoseconds(999_999_999)
+}
+
 pub fn to_seconds_and_nanoseconds_0_test() {
   assert duration.to_seconds_and_nanoseconds(duration.seconds(1)) == #(1, 0)
 }
