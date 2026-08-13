@@ -152,7 +152,7 @@ pub fn compare(left: Duration, right: Duration) -> order.Order {
 
 /// Calculate the difference between two durations.
 ///
-/// This is effectively substracting the first duration from the second.
+/// This is effectively subtracting the first duration from the second.
 ///
 /// # Examples
 ///
