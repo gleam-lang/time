@@ -107,6 +107,17 @@ pub type TimeOfDay {
   TimeOfDay(hours: Int, minutes: Int, seconds: Int, nanoseconds: Int)
 }
 
+/// The 7 days of the week.
+pub type WeekDay {
+  Monday
+  Tuesday
+  Wednesday
+  Thursday
+  Friday
+  Saturday
+  Sunday
+}
+
 /// The 12 months of the year.
 pub type Month {
   January
@@ -343,4 +354,83 @@ pub fn naive_date_compare(one: Date, other: Date) -> Order {
     int.compare(month_to_int(one.month), month_to_int(other.month))
   })
   |> order.lazy_break_tie(fn() { int.compare(one.day, other.day) })
+}
+
+/// Returns the day of the week of the given date.
+pub fn week_day(date: Date) -> WeekDay {
+  // Ported from
+  // https://github.com/erlang/otp/blob/OTP-29.0.6/lib/stdlib/src/calendar.erl#L289
+
+  // The erlang implementation didn't implement it as a regular `mod` (% in
+  // Gleam), but as a function that repeatedly applies the mod until the result
+  // is positive. So I did the same!
+  case mod_7(date_to_gregorian_days(date) + 5) {
+    0 -> Monday
+    1 -> Tuesday
+    2 -> Wednesday
+    3 -> Thursday
+    4 -> Friday
+    5 -> Saturday
+    _ -> Sunday
+  }
+}
+
+fn mod_7(n) {
+  case n % 7 {
+    r if r < 0 -> mod_7(r + 7)
+    r -> r
+  }
+}
+
+/// The days in March, April, May, June, and July.
+const days_per_5_months = 153
+
+/// Days in 400 years.
+const days_per_era = 146_097
+
+/// The number of gregorian days from January 1st year 0, to March 1st year 0.
+const march_1_year_0 = 60
+
+const years_per_era = 400
+
+const months_per_cycle = 5
+
+const days_per_year = 365
+
+/// Computes the number of days starting from year 0, January 1st.
+///
+fn date_to_gregorian_days(date: Date) -> Int {
+  // Neri-Schneider algorithm ported from
+  // https://github.com/erlang/otp/blob/OTP-29.0.6/lib/stdlib/src/calendar.erl#L239
+  let Date(year:, month:, day:) = date
+
+  // Shift the year and month so march is the first month to simplify leap year
+  // handling.
+  let month = month_to_int(month)
+  let year = case month <= 2 {
+    True -> year - 1
+    False -> year
+  }
+  let month = case month > 2 {
+    True -> month - 3
+    False -> month + 9
+  }
+
+  let era = case year >= 0 {
+    True -> year / years_per_era
+    False -> { year - 399 } / years_per_era
+  }
+
+  let year_of_era = year - era * years_per_era
+
+  let day_of_year =
+    { days_per_5_months * month + 2 } / months_per_cycle + day - 1
+
+  let day_of_era =
+    { days_per_year * year_of_era }
+    + { year_of_era / 4 }
+    - { year_of_era / 100 }
+    + day_of_year
+
+  era * days_per_era + day_of_era + march_1_year_0
 }
