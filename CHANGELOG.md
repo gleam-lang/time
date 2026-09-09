@@ -1,5 +1,10 @@
 # Changelog
 
+## Unreleased
+
+- The `calendar` module gains the `WeekDay` type.
+- The calendar module gains the `week_day` function.
+
 ## v1.10.0 - 2026-08-13
 
 - The `duration` module gains the `subtract` function.
