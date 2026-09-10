@@ -272,13 +272,13 @@ pub fn week_day_test() {
 
   let date = calendar.Date(year:, month:, day:)
   use <- bool.guard(when: !calendar.is_valid_date(date), return: expected)
-  assert calendar.week_day(date) == expected
+  assert calendar.day_of_week(date) == expected
 
   // We advance the expected weekday for the next date to check.
   next_weekday(expected)
 }
 
-fn next_weekday(week_day: calendar.WeekDay) -> calendar.WeekDay {
+fn next_weekday(week_day: calendar.DayOfWeek) -> calendar.DayOfWeek {
   case week_day {
     calendar.Monday -> calendar.Tuesday
     calendar.Tuesday -> calendar.Wednesday
