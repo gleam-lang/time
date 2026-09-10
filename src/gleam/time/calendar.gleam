@@ -108,7 +108,7 @@ pub type TimeOfDay {
 }
 
 /// The 7 days of the week.
-pub type WeekDay {
+pub type DayOfWeek {
   Monday
   Tuesday
   Wednesday
@@ -357,7 +357,7 @@ pub fn naive_date_compare(one: Date, other: Date) -> Order {
 }
 
 /// Returns the day of the week of the given date.
-pub fn week_day(date: Date) -> WeekDay {
+pub fn day_of_week(date: Date) -> DayOfWeek {
   // Ported from
   // https://github.com/erlang/otp/blob/OTP-29.0.6/lib/stdlib/src/calendar.erl#L289
 
