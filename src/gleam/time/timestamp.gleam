@@ -25,7 +25,7 @@
 //// commonly think of when they think of time. It is important to be aware that
 //// it can go backwards, and your program must not rely on it only ever going
 //// forwards at a steady rate. For example, for tracking what order events happen
-//// in. 
+//// in.
 ////
 //// This module uses wall clock time. If your program needs time values to always
 //// increase you will need a _monotonic_ time instead. It's uncommon that you
@@ -211,7 +211,7 @@ pub fn add(timestamp: Timestamp, duration: Duration) -> Timestamp {
 /// subtract(from_unix_seconds(1000), duration.seconds(5))
 /// // -> from_unix_seconds(955)
 /// ```
-/// 
+///
 pub fn subtract(timestamp: Timestamp, duration: Duration) -> Timestamp {
   let #(seconds, nanoseconds) = duration.to_seconds_and_nanoseconds(duration)
   Timestamp(timestamp.seconds - seconds, timestamp.nanoseconds - nanoseconds)
@@ -487,10 +487,10 @@ fn to_civil(minutes: Int) -> #(Int, Int, Int) {
 }
 
 /// Converts nanoseconds into a `String` representation of fractional seconds.
-/// 
-/// Assumes that `nanoseconds < 1_000_000_000`, which will be true for any 
+///
+/// Assumes that `nanoseconds < 1_000_000_000`, which will be true for any
 /// normalised timestamp.
-/// 
+///
 fn show_second_fraction(nanoseconds: Int) -> String {
   case int.compare(nanoseconds, 0) {
     // Zero fractional seconds are not shown.
@@ -510,7 +510,7 @@ fn show_second_fraction(nanoseconds: Int) -> String {
 }
 
 /// Given a list of digits, return new list with any trailing zeros removed.
-/// 
+///
 fn remove_trailing_zeros(digits: List(Int)) -> List(Int) {
   let reversed_digits = list.reverse(digits)
 
@@ -525,9 +525,9 @@ fn do_remove_trailing_zeros(reversed_digits) {
   }
 }
 
-/// Returns the list of digits of `number`.  If the number of digits is less 
+/// Returns the list of digits of `number`.  If the number of digits is less
 /// than 9, the result is zero-padded at the front.
-/// 
+///
 fn get_zero_padded_digits(number: Int) -> List(Int) {
   do_get_zero_padded_digits(number, [], 0)
 }
@@ -553,7 +553,7 @@ fn do_get_zero_padded_digits(
 /// Parses an [RFC 3339 formatted time string][spec] into a `Timestamp`.
 ///
 /// [spec]: https://datatracker.ietf.org/doc/html/rfc3339#section-5.6
-/// 
+///
 /// # Examples
 ///
 /// ```gleam
@@ -561,9 +561,9 @@ fn do_get_zero_padded_digits(
 /// timestamp.to_unix_seconds_and_nanoseconds(ts)
 /// // -> #(1, 0)
 /// ```
-/// 
+///
 /// Parsing an invalid timestamp returns an error.
-/// 
+///
 /// ```gleam
 /// let assert Error(Nil) = timestamp.parse_rfc3339("1995-10-31")
 /// ```
@@ -590,24 +590,24 @@ fn do_get_zero_padded_digits(
 ///   without risk of bugs.
 ///
 /// ## Behaviour details
-/// 
-/// - Follows the grammar specified in section 5.6 Internet Date/Time Format of 
+///
+/// - Follows the grammar specified in section 5.6 Internet Date/Time Format of
 ///   RFC 3339 <https://datatracker.ietf.org/doc/html/rfc3339#section-5.6>.
-/// - The `T` and `Z` characters may alternatively be lower case `t` or `z`, 
+/// - The `T` and `Z` characters may alternatively be lower case `t` or `z`,
 ///   respectively.
-/// - Full dates and full times must be separated by `T` or `t`. A space is also 
+/// - Full dates and full times must be separated by `T` or `t`. A space is also
 ///   permitted.
-/// - Leap seconds rules are not considered.  That is, any timestamp may 
+/// - Leap seconds rules are not considered.  That is, any timestamp may
 ///   specify digts `00` - `60` for the seconds.
-/// - Any part of a fractional second that cannot be represented in the 
-///   nanosecond precision is tructated.  That is, for the time string, 
-///   `"1970-01-01T00:00:00.1234567899Z"`, the fractional second `.1234567899` 
+/// - Any part of a fractional second that cannot be represented in the
+///   nanosecond precision is tructated.  That is, for the time string,
+///   `"1970-01-01T00:00:00.1234567899Z"`, the fractional second `.1234567899`
 ///   will be represented as `123_456_789` in the `Timestamp`.
-/// 
+///
 pub fn parse_rfc3339(input: String) -> Result(Timestamp, Nil) {
   let bytes = bit_array.from_string(input)
 
-  // Date 
+  // Date
   use #(year, bytes) <- result.try(parse_year(from: bytes))
   use bytes <- result.try(accept_byte(from: bytes, value: byte_minus))
   use #(month, bytes) <- result.try(parse_month(from: bytes))
@@ -616,7 +616,7 @@ pub fn parse_rfc3339(input: String) -> Result(Timestamp, Nil) {
 
   use bytes <- result.try(accept_date_time_separator(from: bytes))
 
-  // Time 
+  // Time
   use #(hours, bytes) <- result.try(parse_hours(from: bytes))
   use bytes <- result.try(accept_byte(from: bytes, value: byte_colon))
   use #(minutes, bytes) <- result.try(parse_minutes(from: bytes))
@@ -997,7 +997,7 @@ fn offset_to_seconds(sign, hours hours, minutes minutes) {
 }
 
 /// Parse and return the given number of digits from the given bytes.
-/// 
+///
 fn parse_digits(
   from bytes: BitArray,
   count count: Int,
@@ -1025,7 +1025,7 @@ fn do_parse_digits(
 }
 
 /// Accept the given value from `bytes` and move past it if found.
-/// 
+///
 fn accept_byte(
   from bytes: BitArray,
   value value: Int,
@@ -1055,7 +1055,7 @@ fn accept_empty(from bytes: BitArray) -> Result(Nil, Nil) {
 }
 
 /// Note: The caller of this function must ensure that all inputs are valid.
-/// 
+///
 fn from_date_time(
   year year: Int,
   month month: Int,
@@ -1078,14 +1078,14 @@ fn from_date_time(
   |> normalise
 }
 
-/// `julian_seconds_from_parts(year, month, day, hours, minutes, seconds)` 
-/// returns the number of Julian 
+/// `julian_seconds_from_parts(year, month, day, hours, minutes, seconds)`
+/// returns the number of Julian
 /// seconds represented by the given arguments.
-/// 
+///
 /// Note: It is the callers responsibility to ensure the inputs are valid.
-/// 
+///
 /// See https://www.tondering.dk/claus/cal/julperiod.php#formula
-/// 
+///
 fn julian_seconds_from_parts(
   year year: Int,
   month month: Int,
@@ -1104,9 +1104,9 @@ fn julian_seconds_from_parts(
 }
 
 /// Note: It is the callers responsibility to ensure the inputs are valid.
-/// 
+///
 /// See https://www.tondering.dk/claus/cal/julperiod.php#formula
-/// 
+///
 fn julian_day_from_ymd(year year: Int, month month: Int, day day: Int) -> Int {
   let adjustment = { 14 - month } / 12
   let adjusted_year = year + 4800 - adjustment

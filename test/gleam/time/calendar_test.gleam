@@ -1,4 +1,7 @@
+import gleam/bool
 import gleam/float
+import gleam/int
+import gleam/list
 import gleam/order
 import gleam/time/calendar
 import gleam/time/duration
@@ -239,4 +242,50 @@ pub fn compare_date_with_bigger_day_test() {
       calendar.Date(1998, calendar.October, 12),
       calendar.Date(1998, calendar.October, 11),
     )
+}
+
+const months = [
+  calendar.January,
+  calendar.February,
+  calendar.March,
+  calendar.April,
+  calendar.May,
+  calendar.June,
+  calendar.July,
+  calendar.August,
+  calendar.September,
+  calendar.October,
+  calendar.November,
+  calendar.December,
+]
+
+pub fn week_day_test() {
+  // Knowing 0001-jan-01 was a Monday, we can know the week day of all
+  // days following it in the future: 0001-jan-02 is a Tuesday, 0001-jan-03 is a
+  // Wednesday, and so on.
+  // This way we can check our algorithm to find weekdays works for any day from
+  // 0001-jan-01 up to 5000-dec-31.
+  // That should be plenty enough!
+  use expected, year <- int.range(1, 5000, calendar.Monday)
+  use expected, month <- list.fold(months, expected)
+  use expected, day <- int.range(1, 32, expected)
+
+  let date = calendar.Date(year:, month:, day:)
+  use <- bool.guard(when: !calendar.is_valid_date(date), return: expected)
+  assert calendar.day_of_week(date) == expected
+
+  // We advance the expected weekday for the next date to check.
+  next_weekday(expected)
+}
+
+fn next_weekday(week_day: calendar.DayOfWeek) -> calendar.DayOfWeek {
+  case week_day {
+    calendar.Monday -> calendar.Tuesday
+    calendar.Tuesday -> calendar.Wednesday
+    calendar.Wednesday -> calendar.Thursday
+    calendar.Thursday -> calendar.Friday
+    calendar.Friday -> calendar.Saturday
+    calendar.Saturday -> calendar.Sunday
+    calendar.Sunday -> calendar.Monday
+  }
 }
