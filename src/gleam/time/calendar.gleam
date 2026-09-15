@@ -356,7 +356,8 @@ pub fn naive_date_compare(one: Date, other: Date) -> Order {
   |> order.lazy_break_tie(fn() { int.compare(one.day, other.day) })
 }
 
-/// Returns the day of the week of the given date.
+/// Returns the day of the week of the given date in the gregorian calendar.
+///
 pub fn day_of_week(date: Date) -> DayOfWeek {
   // Ported from
   // https://github.com/erlang/otp/blob/OTP-29.0.6/lib/stdlib/src/calendar.erl#L289

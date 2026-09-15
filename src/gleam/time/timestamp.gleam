@@ -294,6 +294,16 @@ pub fn to_rfc3339(timestamp: Timestamp, offset: Duration) -> String {
 ///
 pub fn to_http_date(timestamp: Timestamp) -> String {
   let #(date, time) = to_calendar(timestamp, calendar.utc_offset)
+
+  // Here we're getting the weekday using a different algorithm from the one
+  // implemented in the `calendar` module: since we already have the timestamp
+  // seconds it is more efficient to just carry out a division and a modulo,
+  // rather than going through all the steps of the Neri Schneider algorithm.
+  // We're also not using this in the calendar module because, if one has a date
+  // but no timestamp, then it's faster to use the Neri Schneider algorithm
+  // directly.
+  // There's a bit of repetition but it's a tradeoff we can accept for
+  // performance since this is a core library!
   let days_since_epoch =
     floored_div(timestamp.seconds, int.to_float(seconds_per_day))
   let weekday = modulo(days_since_epoch, 7)
