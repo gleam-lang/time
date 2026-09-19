@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## v1.11.0 - 2026-09-19
 
 - The `calendar` module gains the `DayOfWeek` type.
 - The calendar module gains the `day_of_week` function.
