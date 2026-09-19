@@ -60,9 +60,8 @@ The longer, more detailed answer:
 
 - When writing time to a database or other data storage use epoch time,
   using whatever epoch format it supports. For example, PostgreSQL
-  `timestamp` and `timestampz` are both epoch time, and `timestamp` is
-  preferred as it is more straightforward to use as your application is
-  also using epoch time.
+  `timestamp` and `timestampz` are both epoch time. Be careful that your
+  database client does not modify the epoch at all using timezone information.
 
 - When communicating with other computer systems continue to use epoch
   time. For example, when sending times to another program you could
