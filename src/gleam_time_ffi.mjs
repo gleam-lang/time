@@ -6,6 +6,13 @@ export function system_time() {
   return [seconds, nanoseconds];
 }
 
+export function monotonic_time() {
+  const milliseconds = globalThis.performance.now();
+  const seconds = Math.floor(milliseconds / 1_000);
+  const nanoseconds = Math.floor((milliseconds - seconds * 1_000) * 1_000_000);
+  return [seconds, nanoseconds];
+}
+
 export function local_time_offset_seconds() {
   return new Date().getTimezoneOffset() * -60;
 }
