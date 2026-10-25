@@ -289,3 +289,60 @@ fn next_weekday(week_day: calendar.DayOfWeek) -> calendar.DayOfWeek {
     calendar.Sunday -> calendar.Monday
   }
 }
+
+pub fn parse_rfc3339_full_date_test() {
+  assert calendar.parse_rfc3339_full_date("") == Error(Nil)
+  assert calendar.parse_rfc3339_full_date("26-12-03") == Error(Nil)
+  assert calendar.parse_rfc3339_full_date("10001-01-01") == Error(Nil)
+  assert calendar.parse_rfc3339_full_date("999-01-01") == Error(Nil)
+  assert calendar.parse_rfc3339_full_date("1000-01-34") == Error(Nil)
+  assert calendar.parse_rfc3339_full_date("1000-13-01") == Error(Nil)
+  assert calendar.parse_rfc3339_full_date("10000-3-01") == Error(Nil)
+  assert calendar.parse_rfc3339_full_date("-001-01-01") == Error(Nil)
+
+  assert calendar.parse_rfc3339_full_date("0001-01-01")
+    == Ok(calendar.Date(year: 1, month: calendar.January, day: 1))
+  assert calendar.parse_rfc3339_full_date("1000-01-01")
+    == Ok(calendar.Date(year: 1000, month: calendar.January, day: 1))
+  assert calendar.parse_rfc3339_full_date("2004-11-25")
+    == Ok(calendar.Date(year: 2004, month: calendar.November, day: 25))
+}
+
+pub fn to_rfc3339_full_date_test() {
+  assert calendar.to_rfc3339_full_date(calendar.Date(
+      year: 2004,
+      month: calendar.November,
+      day: 25,
+    ))
+    == "2004-11-25"
+  assert calendar.to_rfc3339_full_date(calendar.Date(
+      year: 1,
+      month: calendar.November,
+      day: 25,
+    ))
+    == "0001-11-25"
+  assert calendar.to_rfc3339_full_date(calendar.Date(
+      year: 1,
+      month: calendar.January,
+      day: 25,
+    ))
+    == "0001-01-25"
+  assert calendar.to_rfc3339_full_date(calendar.Date(
+      year: 1,
+      month: calendar.January,
+      day: 1,
+    ))
+    == "0001-01-01"
+  assert calendar.to_rfc3339_full_date(calendar.Date(
+      year: 10_000,
+      month: calendar.January,
+      day: 1,
+    ))
+    == "10000-01-01"
+  assert calendar.to_rfc3339_full_date(calendar.Date(
+      year: -1,
+      month: calendar.January,
+      day: 1,
+    ))
+    == "-0001-01-01"
+}
