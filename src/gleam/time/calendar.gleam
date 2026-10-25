@@ -87,8 +87,11 @@
 //// If you are making an API such as a HTTP JSON API you are encouraged to use
 //// Unix timestamps instead of calendar times.
 
+import gleam/bool
 import gleam/int
 import gleam/order.{type Order}
+import gleam/result
+import gleam/string
 import gleam/time/duration
 
 /// The Gregorian calendar date. Ambiguous without a time zone.
@@ -434,4 +437,69 @@ fn date_to_gregorian_days(date: Date) -> Int {
     + day_of_year
 
   era * days_per_era + day_of_era + march_1_year_0
+}
+
+/// Parse a [RFC 3339 formatted fill-date string][spec]. That is, `yyyy-mm-dd`.
+///
+/// [spec]: https://datatracker.ietf.org/doc/html/rfc3339#section-5.6
+///
+/// ```gleam
+/// assert calendar.parse_rfc3339_full_date("2004-11-25")
+///   == Ok(calendar.Date(year: 2004, month: calendar.November, day: 25))
+/// ```
+///
+/// Invalid dates will return an error.
+///
+/// ```gleam
+/// assert calendar.parse_rfc3339_full_date("2004-13-00") == Error(Nil)
+/// ```
+///
+/// RFC 3339 specifies that the year must be 4 digits, so other years will
+/// return an error. Future versions may relax this constraint and permit
+/// earlier or later dates.
+///
+/// ```gleam
+/// assert calendar.parse_rfc3339_full_date("999-01-01") == Error(Nil)
+/// ```
+///
+pub fn parse_rfc3339_full_date(input: String) -> Result(Date, Nil) {
+  use <- bool.guard(string.byte_size(input) != 10, Error(Nil))
+  use #(year, month, day) <- result.try(case string.split(input, "-") {
+    [year, month, day] -> Ok(#(year, month, day))
+    _ -> Error(Nil)
+  })
+  use <- bool.guard(string.byte_size(year) != 4, Error(Nil))
+  use <- bool.guard(string.byte_size(month) != 2, Error(Nil))
+  use <- bool.guard(string.byte_size(day) != 2, Error(Nil))
+  use year <- result.try(int.parse(year))
+  use month <- result.try(int.parse(month))
+  use day <- result.try(int.parse(day))
+  use month <- result.try(month_from_int(month))
+  let date = Date(year:, month:, day:)
+  use <- bool.guard(!is_valid_date(date), Error(Nil))
+  Ok(date)
+}
+
+/// Render a [RFC 3339 formatted fill-date string][spec]. That is, `yyyy-mm-dd`.
+///
+/// ```gleam
+/// let date = calendar.Date(year: 2004, month: calendar.November, day: 25)
+/// assert calendar.to_rfc3339_full_date(date) == "2004-11-25"
+/// ```
+///
+/// RFC 3339 specifies that the year must be 4 digits, so dates with negative
+/// years or with years greater than 9999 will produce strings that cannot be
+/// parsed by `parse_rfc3339_full_date`.
+///
+pub fn to_rfc3339_full_date(date: Date) -> String {
+  case date.year {
+    -0 -> "0000"
+    year if year < 0 ->
+      "-" <> string.pad_start(int.to_string(0 - year), to: 4, with: "0")
+    year -> string.pad_start(int.to_string(year), to: 4, with: "0")
+  }
+  <> "-"
+  <> string.pad_start(int.to_string(month_to_int(date.month)), to: 2, with: "0")
+  <> "-"
+  <> string.pad_start(int.to_string(date.day), to: 2, with: "0")
 }

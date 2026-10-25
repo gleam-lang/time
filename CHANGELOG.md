@@ -1,5 +1,10 @@
 # Changelog
 
+## Unreleased
+
+- The `calendar` module gains the `to_rfc3339_full_date` and
+  `to_rfc3339_full_date` functions.
+
 ## v1.11.0 - 2026-09-19
 
 - The `calendar` module gains the `DayOfWeek` type.
